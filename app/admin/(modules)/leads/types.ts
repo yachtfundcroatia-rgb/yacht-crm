@@ -1,9 +1,11 @@
-// app/admin/(modules)/leads/types.ts
-
 export type LeadStatus =
   | "new"
   | "call_scheduled"
-  | "converted";
+  | "call_done"
+  | "interested"
+  | "waiting_for_transfer"
+  | "converted"
+  | "lost";
 
 export interface Lead {
   id: string;
@@ -13,6 +15,7 @@ export interface Lead {
   status: LeadStatus;
   assigned_admin_id?: string | null;
   created_at: string;
+  last_contact_at?: string | null;
 }
 
 export interface LeadNote {
@@ -26,4 +29,6 @@ export interface LeadNote {
 export interface LeadDetailResponse {
   lead: Lead;
   notes: LeadNote[];
+  allowedTransitions: string[];
+  reservation: any | null;
 }

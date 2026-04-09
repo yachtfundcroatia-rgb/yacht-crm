@@ -24,13 +24,7 @@ export default function WithdrawalsTable({ withdrawals, reload }: Props) {
   }
 
   return (
-    <table
-      style={{
-        width: "100%",
-        borderCollapse: "collapse",
-        marginTop: 20
-      }}
-    >
+    <table style={{ width: "100%", borderCollapse: "collapse", marginTop: 20 }}>
       <thead>
         <tr>
           <th style={th}>ID</th>
@@ -47,28 +41,21 @@ export default function WithdrawalsTable({ withdrawals, reload }: Props) {
           <tr key={w.id}>
             <td style={td}>{w.id.slice(0, 8)}</td>
             <td style={td}>{w.investor_ref}</td>
-            <td style={td}>{w.amount}</td>
+            <td style={td}>{w.requested_amount}</td>
             <td style={td}>{w.status}</td>
             <td style={td}>
-              {new Date(w.requested_at).toLocaleString()}
+              {new Date(w.created_at).toLocaleString()}
             </td>
-
             <td style={td}>
-
               {w.status === "pending" && (
                 <>
                   <button
-                    onClick={() =>
-                      handleStatusChange(w.id, "approved")
-                    }
+                    onClick={() => handleStatusChange(w.id, "approved")}
                   >
                     Approve
                   </button>
-
                   <button
-                    onClick={() =>
-                      handleStatusChange(w.id, "rejected")
-                    }
+                    onClick={() => handleStatusChange(w.id, "rejected")}
                     style={{ marginLeft: 8 }}
                   >
                     Reject
@@ -78,14 +65,11 @@ export default function WithdrawalsTable({ withdrawals, reload }: Props) {
 
               {w.status === "approved" && (
                 <button
-                  onClick={() =>
-                    handleStatusChange(w.id, "paid")
-                  }
+                  onClick={() => handleStatusChange(w.id, "paid")}
                 >
                   Mark as Paid
                 </button>
               )}
-
             </td>
           </tr>
         ))}
@@ -97,10 +81,10 @@ export default function WithdrawalsTable({ withdrawals, reload }: Props) {
 const th: React.CSSProperties = {
   textAlign: "left",
   padding: "10px",
-  borderBottom: "1px solid #ddd"
+  borderBottom: "1px solid #ddd",
 };
 
 const td: React.CSSProperties = {
   padding: "10px",
-  borderBottom: "1px solid #eee"
+  borderBottom: "1px solid #eee",
 };

@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL!;
+
 export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
@@ -14,28 +16,23 @@ export default function LoginPage() {
     setError("");
 
     try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/admin/login`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ email, password }),
-        }
-      );
+      const res = await fetch(`${API_URL}/api/admin/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
 
       const data = await res.json();
 
       if (!res.ok) {
-        setError(data.error || "Login failed");
+        setError(data.error || "Invalid credentials");
         return;
       }
 
       localStorage.setItem("admin_token", data.token);
       router.push("/admin");
     } catch {
-      setError("Network error");
+      setError("Connection error. Please try again.");
     }
   }
 
@@ -45,9 +42,7 @@ export default function LoginPage() {
         onSubmit={handleLogin}
         className="bg-white p-8 rounded shadow-md w-96"
       >
-        <h1 className="text-xl font-bold mb-6 text-center">
-          Admin Login
-        </h1>
+        <h1 className="text-xl font-bold mb-6 text-center">Admin Login</h1>
 
         <input
           type="email"
@@ -68,9 +63,7 @@ export default function LoginPage() {
         />
 
         {error && (
-          <div className="text-red-500 mb-4 text-sm">
-            {error}
-          </div>
+          <div className="text-red-500 mb-4 text-sm">{error}</div>
         )}
 
         <button
