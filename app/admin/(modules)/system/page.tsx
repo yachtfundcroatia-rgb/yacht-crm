@@ -34,6 +34,11 @@ export default function SystemPage() {
           description="Manage admin accounts"
           href="/admin/system/admins"
         />
+        <SystemCard
+          title="Investments"
+          description="Manage investment opportunities on the website"
+          href="/admin/system/investments"
+        />
       </div>
     </div>
   );
