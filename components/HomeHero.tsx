@@ -17,14 +17,30 @@ export default function HomeHero() {
             backgroundImage: "linear-gradient(rgba(10,25,47,0.70) 0%, rgba(10,25,47,0.50) 100%), url(https://rhmgpxpirrclysplitzz.supabase.co/storage/v1/object/public/assets/s-m-A4Pzp82JHK8-unsplash.jpg)",
           }}
         >
-          <div className="z-10 max-w-4xl flex flex-col gap-6">
-            <h1 className="text-white text-4xl lg:text-6xl font-black leading-tight tracking-tight">
-              Steady Returns From Professional Yacht Charter Investment
+          <div className="z-10 max-w-5xl flex flex-col items-center gap-4">
+
+            {/* Level 1 — main headline, one line, biggest */}
+            <h1 className="text-white text-5xl lg:text-7xl font-black leading-none tracking-tight whitespace-nowrap">
+              Steady Returns
             </h1>
-            <p className="text-slate-200 text-lg font-medium max-w-2xl mx-auto leading-relaxed">
-              Secure your capital in luxury yacht charters in the stunning waters of Croatia. High-yield nautical opportunities with professional management.
-            </p>
-            <div className="flex flex-wrap gap-4 justify-center mt-2">
+
+            {/* Level 2 — subtitle, one line, smaller */}
+            <h2 className="text-white/90 text-2xl lg:text-3xl font-bold leading-snug">
+              From Professional Yacht Charter Investment
+            </h2>
+
+            {/* Level 3 — two lines description */}
+            <div className="mt-2 flex flex-col gap-1">
+              <p className="text-slate-300 text-base lg:text-lg font-medium leading-relaxed">
+                Secure your capital in luxury yacht charters in the stunning waters of Croatia.
+              </p>
+              <p className="text-slate-300 text-base lg:text-lg font-medium leading-relaxed">
+                High-yield nautical opportunities with professional management.
+              </p>
+            </div>
+
+            {/* CTA Buttons */}
+            <div className="flex flex-wrap gap-4 justify-center mt-4">
               <button
                 onClick={() => setInvestOpen(true)}
                 className="min-w-[160px] rounded-xl h-14 px-8 bg-[#137fec] text-white text-lg font-bold shadow-lg hover:bg-[#0f6fd4] transition-colors"
