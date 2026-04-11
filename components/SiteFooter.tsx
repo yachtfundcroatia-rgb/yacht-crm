@@ -1,12 +1,14 @@
 import Link from "next/link";
 
+const ICON_URL = "https://rhmgpxpirrclysplitzz.supabase.co/storage/v1/object/public/assets/Yacht%20fund%20sygnet%20blue%20bez%20tla.png";
+
 export default function SiteFooter() {
   return (
     <footer className="bg-[#060f18] text-gray-400 py-16 px-6 lg:px-20">
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-10">
         <div>
-          <div className="flex items-center gap-2 mb-4">
-            <span className="text-2xl">⛵</span>
+          <div className="flex items-center gap-3 mb-4">
+            <img src={ICON_URL} alt="Yacht Fund" className="h-8 w-auto object-contain" />
             <span className="text-lg font-black text-white uppercase tracking-tight">Yacht Fund</span>
           </div>
           <p className="text-sm text-gray-400 leading-relaxed">

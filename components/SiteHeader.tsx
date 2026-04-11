@@ -2,8 +2,12 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import InvestModal from "./InvestModal";
 import CallModal from "./CallModal";
+
+const LOGO_URL = "https://rhmgpxpirrclysplitzz.supabase.co/storage/v1/object/public/assets/YACHT%20FUND%20blue%20main%20.png";
+const ICON_URL = "https://rhmgpxpirrclysplitzz.supabase.co/storage/v1/object/public/assets/Yacht%20fund%20sygnet%20blue%20bez%20tla.png";
 
 export default function SiteHeader() {
   const [investOpen, setInvestOpen] = useState(false);
@@ -11,10 +15,13 @@ export default function SiteHeader() {
 
   return (
     <>
-      <header className="sticky top-0 z-40 flex items-center justify-between border-b border-slate-200 bg-white px-6 lg:px-20 py-4">
-        <Link href="/" className="flex items-center gap-3 text-[#0a192f] no-underline">
-          <span className="text-2xl">⛵</span>
-          <span className="text-xl font-black tracking-tight uppercase">Yacht Fund</span>
+      <header className="sticky top-0 z-40 flex items-center justify-between border-b border-slate-200 bg-white px-6 lg:px-20 py-3">
+        <Link href="/" className="flex items-center no-underline">
+          <img
+            src={LOGO_URL}
+            alt="Yacht Fund"
+            className="h-10 w-auto object-contain"
+          />
         </Link>
 
         <nav className="hidden lg:flex items-center gap-8">

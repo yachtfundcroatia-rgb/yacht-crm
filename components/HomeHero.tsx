@@ -14,7 +14,7 @@ export default function HomeHero() {
         <div
           className="flex min-h-[520px] flex-col gap-6 bg-cover bg-center rounded-2xl items-center justify-center p-8 text-center relative overflow-hidden shadow-2xl"
           style={{
-            backgroundImage: "linear-gradient(rgba(10,25,47,0.75) 0%, rgba(10,25,47,0.55) 100%), url(https://images.pexels.com/photos/163236/luxury-yacht-boat-speed-water-163236.jpeg?auto=compress&cs=tinysrgb&w=1920)",
+            backgroundImage: "linear-gradient(rgba(10,25,47,0.70) 0%, rgba(10,25,47,0.50) 100%), url(https://rhmgpxpirrclysplitzz.supabase.co/storage/v1/object/public/assets/s-m-A4Pzp82JHK8-unsplash.jpg)",
           }}
         >
           <div className="z-10 max-w-4xl flex flex-col gap-6">
