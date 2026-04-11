@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-const ICON_URL = "https://rhmgpxpirrclysplitzz.supabase.co/storage/v1/object/public/assets/Yacht%20fund%20sygnet%20blue%20bez%20tla.png";
+const ICON_URL = "https://rhmgpxpirrclysplitzz.supabase.co/storage/v1/object/public/assets/YACHT%20FUND%20white%20main%20%20.png";
 
 export default function SiteFooter() {
   return (
@@ -9,7 +9,6 @@ export default function SiteFooter() {
         <div>
           <div className="flex items-center gap-3 mb-4">
             <img src={ICON_URL} alt="Yacht Fund" className="h-8 w-auto object-contain" />
-            <span className="text-lg font-black text-white uppercase tracking-tight">Yacht Fund</span>
           </div>
           <p className="text-sm text-gray-400 leading-relaxed">
             Premier yacht charter investment fund specializing in the Adriatic Sea. Licensed and regulated nautical opportunities.
