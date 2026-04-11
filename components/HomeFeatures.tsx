@@ -19,7 +19,7 @@ export default function HomeFeatures() {
       ),
       title: "Asset Backed",
       description: "Your investment is secured by physical, high-value luxury yacht assets. Investing exclusively in high-demand yacht models like the Lagoon 42, known for stability, space, and resale value.",
-      image: "https://rhmgpxpirrclysplitzz.supabase.co/storage/v1/object/public/assets/Gemini_Generated_Image_wox8t3wox8t3wox8.png",
+      image: "https://rhmgpxpirrclysplitzz.supabase.co/storage/v1/object/public/assets/2613e00b-e4ca-4e4c-ad25-0ad26d014a5a.png"
     },
     {
       icon: (
