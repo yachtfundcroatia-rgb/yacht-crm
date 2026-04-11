@@ -8,8 +8,8 @@ export default function HomeFeatures() {
         </svg>
       ),
       title: "Prime Locations",
-      description: "Based in Split and Dubrovnik, the heart of Adriatic nautical tourism.",
-      image: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/Croatia_location_map.svg/800px-Croatia_location_map.svg.png",
+      description: "Our catamaran fleet is strategically stationed across all the most popular and premium marinas in Croatia, ensuring maximum occupancy and charter demand.",
+      image: image: image: "https://rhmgpxpirrclysplitzz.supabase.co/storage/v1/object/public/assets/Gemini_Generated_Image_wox8t3wox8t3wox8.png",
     },
     {
       icon: (
@@ -18,19 +18,18 @@ export default function HomeFeatures() {
         </svg>
       ),
       title: "Asset Backed",
-      description: "Your investment is secured by physical, high-value luxury yacht assets.",
-      image: "https://images.pexels.com/photos/1209978/pexels-photo-1209978.jpeg?auto=compress&cs=tinysrgb&w=800",
+      description: "Your investment is secured by physical, high-value luxury yacht assets. Investing exclusively in high-demand yacht models like the Lagoon 42, known for stability, space, and resale value.",
+      image: image: "https://rhmgpxpirrclysplitzz.supabase.co/storage/v1/object/public/assets/2613e00b-e4ca-4e4c-ad25-0ad26d014a5a.png",
     },
     {
       icon: (
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#137fec" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/>
-          <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+          <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
         </svg>
       ),
-      title: "Tax Optimized",
-      description: "Efficient structure leveraging local nautical tax benefits for EU investors.",
-      image: "https://images.pexels.com/photos/187041/pexels-photo-187041.jpeg?auto=compress&cs=tinysrgb&w=800",
+      title: "Predictable Yields",
+      description: "A structured 6-year investment path with transparent annual payouts and a clear capital exit strategy.",
+      image: image: "https://rhmgpxpirrclysplitzz.supabase.co/storage/v1/object/public/assets/e1d748fc-a959-4a95-be83-cfe8652c833d.png",
     },
   ];
 
