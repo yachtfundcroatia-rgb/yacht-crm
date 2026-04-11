@@ -9,7 +9,7 @@ export default function HomeFeatures() {
       ),
       title: "Prime Locations",
       description: "Our catamaran fleet is strategically stationed across all the most popular and premium marinas in Croatia, ensuring maximum occupancy and charter demand.",
-      image: image: "https://rhmgpxpirrclysplitzz.supabase.co/storage/v1/object/public/assets/Gemini_Generated_Image_wox8t3wox8t3wox8.png",
+      image: "https://rhmgpxpirrclysplitzz.supabase.co/storage/v1/object/public/assets/Gemini_Generated_Image_wox8t3wox8t3wox8.png",
     },
     {
       icon: (
