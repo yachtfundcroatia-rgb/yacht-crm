@@ -29,7 +29,7 @@ export default function HomeFeatures() {
       ),
       title: "Predictable Yields",
       description: "A structured 6-year investment path with transparent annual payouts and a clear capital exit strategy.",
-      image: image: "https://rhmgpxpirrclysplitzz.supabase.co/storage/v1/object/public/assets/e1d748fc-a959-4a95-be83-cfe8652c833d.png",
+      image: "https://rhmgpxpirrclysplitzz.supabase.co/storage/v1/object/public/assets/e1d748fc-a959-4a95-be83-cfe8652c833d.png",
     },
   ];
 
