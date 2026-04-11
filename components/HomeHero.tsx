@@ -18,9 +18,6 @@ export default function HomeHero() {
           }}
         >
           <div className="z-10 max-w-4xl flex flex-col gap-6">
-            <div className="inline-flex items-center self-center gap-2 px-3 py-1 bg-yellow-400/20 border border-yellow-400/30 rounded-full">
-              <span className="text-yellow-400 text-xs font-black uppercase tracking-widest">✦ Adriatic Excellence</span>
-            </div>
             <h1 className="text-white text-4xl lg:text-6xl font-black leading-tight tracking-tight">
               Steady Returns From Professional Yacht Charter Investment
             </h1>
@@ -30,7 +27,7 @@ export default function HomeHero() {
             <div className="flex flex-wrap gap-4 justify-center mt-2">
               <button
                 onClick={() => setInvestOpen(true)}
-                className="min-w-[160px] rounded-xl h-14 px-8 bg-[#137fec] text-white text-lg font-bold shadow-lg hover:scale-105 transition-transform"
+                className="min-w-[160px] rounded-xl h-14 px-8 bg-[#137fec] text-white text-lg font-bold shadow-lg hover:bg-[#0f6fd4] transition-colors"
               >
                 Invest Now
               </button>
