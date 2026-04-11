@@ -37,8 +37,8 @@ export default function HomeFeatures() {
     <section className="py-20 px-6 lg:px-20 bg-white">
       <div className="max-w-7xl mx-auto grid md:grid-cols-3 gap-8">
         {features.map((f) => (
-          <div key={f.title} className="bg-[#f6f7f8] rounded-2xl overflow-hidden border border-gray-100">
-            <div className="p-6">
+          <div key={f.title} className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-md flex flex-col">
+            <div className="p-6 flex-1">
               <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center mb-4">
                 {f.icon}
               </div>
