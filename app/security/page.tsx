@@ -40,16 +40,56 @@ function SecurityHero() {
 function CapitalProtection() {
   const items = [
     {
-      title: "Asset-Backed Security",
-      description: "Your investment is directly secured by a diverse fleet of luxury yachts. Every euro is backed by physical assets with quarterly independent valuations.",
+      icon: (
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#137fec" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+        </svg>
+      ),
+      title: "Asset-Backed Structure",
+      description: "Each investment is secured by a specific yacht with a clearly defined market value. Investor interests are protected through a mortgage entry in the Croatian Maritime Register.",
     },
     {
-      title: "Croatian Legal Trust",
-      description: "Assets are held within a regulated Special Purpose Vehicle (SPV) compliant with EU and Croatian maritime law, ensuring clear ownership rights.",
+      icon: (
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#137fec" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+          <line x1="16" y1="13" x2="8" y2="13"/>
+          <line x1="16" y1="17" x2="8" y2="17"/>
+          <polyline points="10 9 9 9 8 9"/>
+        </svg>
+      ),
+      title: "Legal Structure and Transparency",
+      description: "All agreements are executed in written form and notarially certified by both parties, ensuring legal certainty and transparency.",
     },
     {
-      title: "Comprehensive Insurance",
-      description: "All vessels carry full Lloyd's of London hull and machinery coverage, plus high-limit third-party liability and charter loss-of-rent protection.",
+      icon: (
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#137fec" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+        </svg>
+      ),
+      title: "Insurance Coverage",
+      description: "The yacht is comprehensively insured, including accidental damage and loss, third-party liability, and loss of charter income.",
+    },
+    {
+      icon: (
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#137fec" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>
+      ),
+      title: "Experienced Operator",
+      description: "Fleet operations are handled by one of the largest charter operators in Croatia, with over 30 years of experience and a fleet exceeding 300 yachts. The operator also supports yacht selection to maximize charter profitability.",
+    },
+    {
+      icon: (
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#137fec" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+        </svg>
+      ),
+      title: "Market Resilience",
+      description: "The yacht charter market has demonstrated strong resilience to economic cycles. During the pandemic, demand for private and flexible travel solutions increased significantly, reinforcing long-term market fundamentals.",
     },
   ];
 
@@ -57,14 +97,16 @@ function CapitalProtection() {
     <section className="px-6 lg:px-20 py-16 bg-[#f6f7f8]">
       <div className="max-w-7xl mx-auto">
         <h2 className="text-2xl font-black text-[#0a192f] mb-10 flex items-center gap-3">
-          <span className="text-[#137fec]">🛡</span>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#137fec" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          </svg>
           Capital Protection &amp; Legal Structure
         </h2>
-        <div className="grid md:grid-cols-3 gap-6 mb-10">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {items.map((item) => (
             <div key={item.title} className="bg-white rounded-xl p-6 border border-gray-100 shadow-sm">
-              <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center mb-4 text-[#137fec]">
-                🛡
+              <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center mb-4">
+                {item.icon}
               </div>
               <h3 className="font-black text-[#0a192f] mb-2">{item.title}</h3>
               <p className="text-gray-600 text-sm leading-relaxed">{item.description}</p>
@@ -107,24 +149,88 @@ function FAQSection() {
 
   const faqs = [
     {
-      q: "What is the minimum investment requirement?",
-      a: "The minimum initial investment for our Yacht Charter Fund is €25,000. Subsequent investments can be made in increments of €5,000. We also offer institutional share classes for investments exceeding €500,000.",
+      q: "What is the yacht investment project in Croatia about?",
+      a: "The project involves a group investment in modern sailing yachts or catamarans, which are then chartered to tourists in Croatia. Revenue from rentals generates regular returns, which are distributed proportionally among investors.",
     },
     {
-      q: "How and when are returns distributed?",
-      a: "Distributions are paid out semi-annually. Yields are generated from charter income throughout the Mediterranean sailing season (May-October). Investors can choose to have distributions paid to their bank account or automatically reinvested into the fund.",
+      q: "What is the minimum investment threshold?",
+      a: "The minimum investment amount is €10,000. You may invest multiples of this amount, thereby increasing your share of returns.",
     },
     {
-      q: "What is the typical investment horizon?",
-      a: "While there is no fixed lock-up period, we recommend a medium to long-term horizon of 3-5 years to fully benefit from the yacht's operational lifecycle and market appreciation. Redemption requests are processed quarterly with a 90-day notice period.",
+      q: "What are the projected returns?",
+      a: "The potential annual return is up to 12%. Returns depend on the seasonal occupancy of the yacht, which is monitored by a professional charter operator.",
     },
     {
-      q: "How are the yachts managed and maintained?",
-      a: "All yachts are professionally managed by our in-house maritime team based in Split, Croatia. We handle all staffing, winter maintenance, charter bookings, and technical servicing to ensure the assets retain their value and remain in pristine condition.",
+      q: "Who manages the yacht charter operations?",
+      a: "Operational charter management is handled by a reputable Croatian operator with over 30 years of experience and a fleet of more than 300 yachts. This ensures investors' assets are managed by professionals.",
     },
     {
-      q: "What happens if the charter season is poor?",
-      a: "The fund maintains a cash reserve to cover operational expenses during off-peak or below-average seasons. Additionally, our insurance policy includes Loss of Charter coverage for mechanical breakdowns or other unforeseen interruptions to revenue.",
+      q: "Is the investment safe?",
+      a: "Yes. Each investment is legally secured through a mortgage entry on the purchased yacht, meaning the contributed capital is backed by a real, tangible asset.",
+    },
+    {
+      q: "Is the yacht insured?",
+      a: "Yes. The yacht is comprehensively insured, covering physical damage, third-party liability, and an additional policy protecting investors against loss of charter income.",
+    },
+    {
+      q: "What is the investment duration?",
+      a: "The standard investment term is 72 months (6 seasons). After 24 months, there is an option to exit the investment at no cost through an assignment of rights to another investor.",
+    },
+    {
+      q: "How can I exit the investment early?",
+      a: "After 24 months, an investor may use the contract assignment option — transferring their rights and obligations to another investor without additional costs.",
+    },
+    {
+      q: "How are returns calculated and reported?",
+      a: "Each investor receives access to an individual online investment panel, where regular rental reports and profit calculations are published relative to their investment share.",
+    },
+    {
+      q: "When are profits paid out?",
+      a: "Charter profits are paid out once a year, after the full sailing season ends and revenues are settled by the operator.",
+    },
+    {
+      q: "What is the step-by-step investment process?",
+      a: "1. Declaration of investment and payment of a 10% reservation deposit. 2. Once the required funds are collected, the yacht is purchased. 3. Investors sign notarially certified investment agreements and make the full payment. 4. The yacht is handed over to the charter operator. 5. The charter season begins, followed by annual settlements with investors.",
+    },
+    {
+      q: "Where will the yacht be based?",
+      a: "The yacht will be based in one of Croatia's popular marinas, ensuring high tourist interest and strong occupancy during the season.",
+    },
+    {
+      q: "Do I sign an investment agreement?",
+      a: "Yes. Each investor enters into an investment agreement in the form of a notarial deed, providing additional legal protection for the entire transaction.",
+    },
+    {
+      q: "Do I need to be present in person to sign the agreement?",
+      a: "No. It is possible to sign through a proxy, and the entire process can be completed remotely if agreed upon with the project organizers.",
+    },
+    {
+      q: "Can I monitor the yacht's occupancy?",
+      a: "Yes. Occupancy data and charter revenues are shared periodically in reports available online, so each investor can monitor investment progress in real time.",
+    },
+    {
+      q: "Who can invest?",
+      a: "The project is open to individuals and legal entities with available capital of at least €10,000 who are interested in alternative, income-generating investments backed by real assets.",
+    },
+    {
+      q: "Can I invest from abroad?",
+      a: "Yes. The investment is available to individuals from across the European Union and other countries, provided they meet KYC (Know Your Customer) and AML (Anti-Money Laundering) requirements.",
+    },
+    {
+      q: "Can I use the yacht as an investor?",
+      a: "At the current stage, the project does not include free use of the yacht by investors. However, special discounts on private rentals may be available to project participants.",
+    },
+    {
+      q: "Can I invest through a company?",
+      a: "Yes. You may invest as a private individual or through a capital company. The investment agreement will be adapted accordingly to the investor's legal form.",
+    },
+    {
+      q: "Who is behind the project?",
+      a: "The project is led by a team of experienced specialists from the investment and sailing industries. Our goal is to create safe and profitable investment models based on real assets such as charter yachts.",
+    },
+    {
+      q: "How can I get more information?",
+      a: "Contact us through the contact form on the website, send an email, or schedule a phone call with our investment advisor.",
     },
   ];
 
@@ -144,10 +250,14 @@ function FAQSection() {
                 onClick={() => setOpen(open === i ? null : i)}
                 className="w-full px-6 py-5 text-left flex justify-between items-center hover:bg-gray-100 transition-colors"
               >
-                <span className="font-bold text-[#0a192f] pr-4">{faq.q}</span>
-                <span className={`text-gray-400 text-xl transition-transform flex-shrink-0 ${open === i ? "rotate-180" : ""}`}>
-                  ∨
-                </span>
+                <span className="font-bold text-[#0a192f] pr-4 text-sm">{faq.q}</span>
+                <svg
+                  width="16" height="16" viewBox="0 0 24 24" fill="none"
+                  stroke="#6b7280" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                  className={`flex-shrink-0 transition-transform ${open === i ? "rotate-180" : ""}`}
+                >
+                  <polyline points="6 9 12 15 18 9"/>
+                </svg>
               </button>
               {open === i && (
                 <div className="px-6 pb-5 text-gray-600 leading-relaxed text-sm">
@@ -174,7 +284,7 @@ function SecurityCTA() {
             <p className="text-blue-100 mb-8">
               Our investment specialists are ready to help you understand the fund structure in detail.
             </p>
-            <div className="flex gap-4 justify-center">
+            <div className="flex gap-4 justify-center flex-wrap">
               <button
                 onClick={() => setCallOpen(true)}
                 className="px-8 py-3 bg-white text-[#137fec] rounded-xl font-bold hover:bg-blue-50 transition-colors"
