@@ -55,7 +55,6 @@ function CapitalProtection() {
           <polyline points="14 2 14 8 20 8"/>
           <line x1="16" y1="13" x2="8" y2="13"/>
           <line x1="16" y1="17" x2="8" y2="17"/>
-          <polyline points="10 9 9 9 8 9"/>
         </svg>
       ),
       title: "Legal Structure and Transparency",
@@ -146,6 +145,7 @@ function SecurityPoints() {
 
 function FAQSection() {
   const [open, setOpen] = useState<number | null>(null);
+  const [showAll, setShowAll] = useState(false);
 
   const faqs = [
     {
@@ -214,7 +214,7 @@ function FAQSection() {
     },
     {
       q: "Can I invest from abroad?",
-      a: "Yes. The investment is available to individuals from across the European Union and other countries, provided they meet KYC (Know Your Customer) and AML (Anti-Money Laundering) requirements.",
+      a: "Yes. The investment is available to individuals from across the European Union and other countries, provided they meet KYC and AML requirements.",
     },
     {
       q: "Can I use the yacht as an investor?",
@@ -234,6 +234,8 @@ function FAQSection() {
     },
   ];
 
+  const visible = showAll ? faqs : faqs.slice(0, 5);
+
   return (
     <section className="px-6 lg:px-20 py-20 bg-white">
       <div className="max-w-3xl mx-auto">
@@ -244,7 +246,7 @@ function FAQSection() {
           Everything you need to know about the fund, returns, and liquidity.
         </p>
         <div className="space-y-3">
-          {faqs.map((faq, i) => (
+          {visible.map((faq, i) => (
             <div key={i} className="bg-[#f6f7f8] rounded-xl overflow-hidden border border-gray-100">
               <button
                 onClick={() => setOpen(open === i ? null : i)}
@@ -254,7 +256,7 @@ function FAQSection() {
                 <svg
                   width="16" height="16" viewBox="0 0 24 24" fill="none"
                   stroke="#6b7280" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-                  className={`flex-shrink-0 transition-transform ${open === i ? "rotate-180" : ""}`}
+                  style={{ transform: open === i ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.2s", flexShrink: 0 }}
                 >
                   <polyline points="6 9 12 15 18 9"/>
                 </svg>
@@ -267,6 +269,34 @@ function FAQSection() {
             </div>
           ))}
         </div>
+
+        {!showAll && (
+          <div className="mt-6 text-center">
+            <button
+              onClick={() => setShowAll(true)}
+              className="inline-flex items-center gap-2 px-6 py-3 border-2 border-[#137fec] text-[#137fec] rounded-xl font-bold text-sm hover:bg-blue-50 transition-colors"
+            >
+              Show all {faqs.length} questions
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#137fec" strokeWidth="2">
+                <polyline points="6 9 12 15 18 9"/>
+              </svg>
+            </button>
+          </div>
+        )}
+
+        {showAll && (
+          <div className="mt-6 text-center">
+            <button
+              onClick={() => { setShowAll(false); setOpen(null); }}
+              className="inline-flex items-center gap-2 px-6 py-3 border-2 border-gray-200 text-gray-500 rounded-xl font-bold text-sm hover:bg-gray-50 transition-colors"
+            >
+              Show less
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6b7280" strokeWidth="2">
+                <polyline points="18 15 12 9 6 15"/>
+              </svg>
+            </button>
+          </div>
+        )}
       </div>
     </section>
   );
