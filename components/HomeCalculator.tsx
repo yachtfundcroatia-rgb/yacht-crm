@@ -142,7 +142,7 @@ export default function HomeCalculator() {
                 value={investment}
                 onChange={(e) => setInvestment(Number(e.target.value))}
                 className="w-full h-2 bg-blue-100 rounded-lg appearance-none cursor-pointer"
-                style={{ accentColor: "#137fec" }}
+                style={{ accentColor: "#0a192f" }}
               />
               <div className="flex justify-between text-xs text-gray-400 mt-1">
                 <span>€10k</span>
