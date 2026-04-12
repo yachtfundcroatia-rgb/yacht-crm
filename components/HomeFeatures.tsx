@@ -46,7 +46,8 @@ export default function HomeFeatures() {
               <p className="text-gray-600 text-sm leading-relaxed mb-4">{f.description}</p>
             </div>
             <div
-              className="h-44 bg-cover bg-center"
+              className="h-52 bg-cover bg-center bg-no-repeat"
+              style={{ backgroundSize: "cover", backgroundPosition: "center" }}
               style={{ backgroundImage: `url(${f.image})` }}
             />
           </div>
