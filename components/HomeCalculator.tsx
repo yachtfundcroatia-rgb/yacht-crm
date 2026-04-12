@@ -101,13 +101,13 @@ export default function HomeCalculator() {
               in the thriving Croatian charter market.
             </p>
             <div className="grid grid-cols-2 gap-4">
-              <div className="bg-white rounded-xl p-6 border border-gray-100 shadow-sm">
+              <div className="bg-[#f8faff] rounded-xl p-6 border border-blue-50 shadow-md">
                 <div className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">
                   Target Return
                 </div>
                 <ROIBadge />
               </div>
-              <div className="bg-white rounded-xl p-6 border border-gray-100 shadow-sm">
+              <div className="bg-[#f8faff] rounded-xl p-6 border border-blue-50 shadow-md">
                 <div className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">
                   Minimum Unit
                 </div>
@@ -116,9 +116,9 @@ export default function HomeCalculator() {
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100">
+          <div className="bg-[#f8faff] rounded-2xl p-8 shadow-xl border border-blue-50">
             <div className="flex items-center gap-2 mb-6">
-              <div className="w-7 h-7 bg-blue-50 rounded-lg flex items-center justify-center">
+              <div className="w-7 h-7 bg-blue-100 rounded-lg flex items-center justify-center">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#137fec" strokeWidth="2">
                   <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
                   <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
@@ -141,7 +141,8 @@ export default function HomeCalculator() {
                 step="10000"
                 value={investment}
                 onChange={(e) => setInvestment(Number(e.target.value))}
-                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-[#137fec]"
+                className="w-full h-2 bg-blue-100 rounded-lg appearance-none cursor-pointer"
+                style={{ accentColor: "#137fec" }}
               />
               <div className="flex justify-between text-xs text-gray-400 mt-1">
                 <span>€10k</span>
