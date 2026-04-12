@@ -109,15 +109,14 @@ function Founder() {
         <div className="grid lg:grid-cols-2 gap-16 items-center">
           <div>
             <div className="flex items-center gap-5 mb-6">
-              <div className="w-20 h-20 bg-[#eff6ff] rounded-2xl flex items-center justify-center flex-shrink-0">
-                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#137fec" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                  <circle cx="12" cy="7" r="4"/>
-                </svg>
-              </div>
+              <img
+                src="https://rhmgpxpirrclysplitzz.supabase.co/storage/v1/object/public/assets/Ja%20yacht.JPG"
+                alt="Jacek Dziemidok"
+                className="w-20 h-20 rounded-2xl object-cover flex-shrink-0 shadow-md"
+              />
               <div>
                 <h3 className="text-2xl font-black text-[#0a192f]">Jacek Dziemidok</h3>
-                <p className="text-[#137fec] font-bold">Founder &amp; CEO</p>
+                <p className="text-[#137fec] font-bold">Founder / Managing Partner</p>
                 <a
                   href="https://www.linkedin.com/in/dziemidok/"
                   target="_blank"
@@ -192,7 +191,7 @@ function Partner() {
                 <p className="text-gray-500 text-sm">Biograd Na Moru, Croatia</p>
               </div>
             </div>
-            <p className="text-gray-600 leading-relaxed mb-6">
+            <p className="text-gray-600 leading-relaxed mb-4">
               Angelina Yachts is one of Croatia's largest and most trusted charter operators, with over 30 years of experience and a fleet exceeding 300 yachts. Operating from bases across the Adriatic — Biograd, Split, Trogir, Dubrovnik, and more.
             </p>
             <p className="text-gray-600 leading-relaxed mb-6">

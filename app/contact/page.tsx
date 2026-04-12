@@ -69,7 +69,7 @@ function ContactContent() {
         <div>
           <h2 className="text-2xl font-black text-[#0a192f] mb-8">Get in Touch</h2>
 
-          <div className="space-y-6 mb-10">
+          <div className="space-y-6">
             <div className="flex items-start gap-4">
               <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center flex-shrink-0">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#137fec" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -109,38 +109,6 @@ function ContactContent() {
                 <div className="text-gray-400 text-xs mt-1">OIB: 97893023854</div>
               </div>
             </div>
-          </div>
-
-          {/* Partner */}
-          <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
-            <div className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-3">Charter Operations Partner</div>
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#137fec" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M3 17l2-8h14l2 8H3z"/>
-                  <path d="M7 17V9"/>
-                  <path d="M17 17V9"/>
-                  <path d="M12 17V5"/>
-                  <path d="M5 9c0-2 1.5-4 7-4s7 2 7 4"/>
-                </svg>
-              </div>
-              <div>
-                <div className="font-black text-[#0a192f]">Angelina Yachts</div>
-                <div className="text-sm text-gray-500">300+ yachts · 30+ years experience</div>
-              </div>
-            </div>
-            <p className="text-sm text-gray-600 leading-relaxed">
-              One of Croatia's largest and most trusted charter operators, based in Biograd Na Moru. Managing our fleet across all premium Adriatic marinas.
-            </p>
-            <a href="https://www.angelina.hr" target="_blank" rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 text-sm font-bold text-[#137fec] hover:underline mt-3">
-              www.angelina.hr
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#137fec" strokeWidth="2">
-                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
-                <polyline points="15 3 21 3 21 9"/>
-                <line x1="10" y1="14" x2="21" y2="3"/>
-              </svg>
-            </a>
           </div>
         </div>
 
