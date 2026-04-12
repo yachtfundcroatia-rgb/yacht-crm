@@ -19,7 +19,7 @@ export default function HomeFeatures() {
       ),
       title: "Asset Backed",
       description: "Your investment is secured by physical, high-value luxury yacht assets. Investing exclusively in high-demand yacht models like the Lagoon 42, known for stability, space, and resale value.",
-      image: "https://rhmgpxpirrclysplitzz.supabase.co/storage/v1/object/public/assets/2613e00b-e4ca-4e4c-ad25-0ad26d014a5a.png"
+      image: "https://rhmgpxpirrclysplitzz.supabase.co/storage/v1/object/public/assets/2613e00b-e4ca-4e4c-ad25-0ad26d014a5a.png",
     },
     {
       icon: (
@@ -35,18 +35,18 @@ export default function HomeFeatures() {
 
   return (
     <section className="py-20 px-6 lg:px-20 bg-white">
-      <div className="max-w-7xl mx-auto grid md:grid-cols-3 gap-8">
+      <div className="max-w-7xl mx-auto grid md:grid-cols-3 gap-8 items-stretch">
         {features.map((f) => (
-          <div key={f.title} className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-md flex flex-col">
+          <div key={f.title} className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-lg flex flex-col">
             <div className="p-6 flex-1">
               <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center mb-4">
                 {f.icon}
               </div>
               <h3 className="text-xl font-black text-[#0a192f] mb-2">{f.title}</h3>
-              <p className="text-gray-600 text-sm leading-relaxed mb-4">{f.description}</p>
+              <p className="text-gray-600 text-sm leading-relaxed">{f.description}</p>
             </div>
             <div
-              className="h-52 bg-cover bg-center"
+              className="h-52 bg-cover bg-center flex-shrink-0"
               style={{ backgroundImage: `url(${f.image})` }}
             />
           </div>

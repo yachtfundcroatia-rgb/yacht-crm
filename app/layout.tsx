@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AdminProvider } from "@/app/context/AdminContext";
+import ScrollToTop from "@/components/ScrollToTop";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -14,8 +15,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Yacht Fund CRM",
-  description: "Yacht Fund administration panel",
+  title: "Yacht Fund",
+  description: "Premier yacht charter investment fund specializing in the Adriatic Sea.",
 };
 
 export default function RootLayout({
@@ -30,6 +31,7 @@ export default function RootLayout({
       >
         <AdminProvider>
           {children}
+          <ScrollToTop />
         </AdminProvider>
       </body>
     </html>
