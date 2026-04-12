@@ -21,11 +21,13 @@ export default function SiteHeader() {
           </Link>
 
           {/* Desktop nav */}
-          <nav className="hidden lg:flex items-center gap-8">
+          <nav className="hidden lg:flex items-center gap-6">
             <Link href="/how-it-works" className="text-slate-700 text-sm font-semibold hover:text-[#137fec] transition-colors">How it Works</Link>
             <Link href="/investments" className="text-slate-700 text-sm font-semibold hover:text-[#137fec] transition-colors">Investments</Link>
-            <Link href="/security" className="text-slate-700 text-sm font-semibold hover:text-[#137fec] transition-colors">Security &amp; FAQ</Link>
-            <div className="flex items-center gap-1 text-slate-500 text-xs font-bold border-l border-slate-300 pl-8">
+            <Link href="/security" className="text-slate-700 text-sm font-semibold hover:text-[#137fec] transition-colors">Security & FAQ</Link>
+            <Link href="/about" className="text-slate-700 text-sm font-semibold hover:text-[#137fec] transition-colors">About</Link>
+            <Link href="/contact" className="text-slate-700 text-sm font-semibold hover:text-[#137fec] transition-colors">Contact</Link>
+            <div className="flex items-center gap-1 text-slate-500 text-xs font-bold border-l border-slate-300 pl-6">
               <span>EN</span><span className="text-slate-300 mx-1">/</span><span>HR</span>
             </div>
           </nav>
@@ -69,11 +71,13 @@ export default function SiteHeader() {
 
         {/* Mobile menu */}
         {mobileOpen && (
-          <div className="lg:hidden border-t border-gray-100 bg-white px-6 py-4 flex flex-col gap-4">
-            <Link href="/how-it-works" onClick={() => setMobileOpen(false)} className="text-slate-700 text-sm font-semibold hover:text-[#137fec] transition-colors py-2 border-b border-gray-50">How it Works</Link>
-            <Link href="/investments" onClick={() => setMobileOpen(false)} className="text-slate-700 text-sm font-semibold hover:text-[#137fec] transition-colors py-2 border-b border-gray-50">Investments</Link>
-            <Link href="/security" onClick={() => setMobileOpen(false)} className="text-slate-700 text-sm font-semibold hover:text-[#137fec] transition-colors py-2 border-b border-gray-50">Security &amp; FAQ</Link>
-            <div className="flex gap-3 pt-2">
+          <div className="lg:hidden border-t border-gray-100 bg-white px-6 py-4 flex flex-col gap-1">
+            <Link href="/how-it-works" onClick={() => setMobileOpen(false)} className="text-slate-700 text-sm font-semibold hover:text-[#137fec] transition-colors py-2.5 border-b border-gray-50">How it Works</Link>
+            <Link href="/investments" onClick={() => setMobileOpen(false)} className="text-slate-700 text-sm font-semibold hover:text-[#137fec] transition-colors py-2.5 border-b border-gray-50">Investments</Link>
+            <Link href="/security" onClick={() => setMobileOpen(false)} className="text-slate-700 text-sm font-semibold hover:text-[#137fec] transition-colors py-2.5 border-b border-gray-50">Security & FAQ</Link>
+            <Link href="/about" onClick={() => setMobileOpen(false)} className="text-slate-700 text-sm font-semibold hover:text-[#137fec] transition-colors py-2.5 border-b border-gray-50">About</Link>
+            <Link href="/contact" onClick={() => setMobileOpen(false)} className="text-slate-700 text-sm font-semibold hover:text-[#137fec] transition-colors py-2.5 border-b border-gray-50">Contact</Link>
+            <div className="flex gap-3 pt-3">
               <button
                 onClick={() => { setInvestOpen(true); setMobileOpen(false); }}
                 className="flex-1 rounded-lg h-11 px-4 bg-[#137fec] text-white text-sm font-bold hover:bg-[#0f6fd4] transition-all"
