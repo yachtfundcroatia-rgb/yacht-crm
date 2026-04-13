@@ -10,7 +10,7 @@ import {
   Users,
   Settings,
   LogOut,
-  Anchor,
+  UserCheck,
 } from "lucide-react";
 
 const LOGO_URL = "https://rhmgpxpirrclysplitzz.supabase.co/storage/v1/object/public/assets/YACHT%20FUND%20white%20main%20%20.png";
@@ -61,20 +61,19 @@ function Sidebar() {
   const menu = [
     { label: "Dashboard", href: "/admin", icon: LayoutDashboard, roles: ["superadmin", "sales"] },
     { label: "Leads", href: "/admin/leads", icon: Users, roles: ["superadmin", "sales"] },
+    { label: "Investors", href: "/admin/investors", icon: UserCheck, roles: ["superadmin"] },
     { label: "Withdrawals", href: "/admin/withdrawals", icon: ArrowDownToLine, roles: ["superadmin"] },
     { label: "System", href: "/admin/system", icon: Settings, roles: ["superadmin"] },
   ];
 
   return (
     <div className="w-56 flex-shrink-0 flex flex-col" style={{ background: "#0a192f", minHeight: "100vh" }}>
-      {/* Logo */}
       <div className="px-5 py-5 border-b border-white/10">
         <Link href="/" target="_blank">
           <img src={LOGO_URL} alt="Yacht Fund" className="h-7 w-auto object-contain" />
         </Link>
       </div>
 
-      {/* Nav */}
       <nav className="flex-1 px-3 py-4 space-y-1">
         {menu
           .filter((item) => admin && item.roles.includes(admin.role))
@@ -98,7 +97,6 @@ function Sidebar() {
           })}
       </nav>
 
-      {/* Bottom */}
       <div className="px-3 py-4 border-t border-white/10">
         <div className="px-3 py-2 text-xs text-white/40">
           <span className="font-semibold text-white/60">Role:</span> {admin?.role}
@@ -116,6 +114,7 @@ function Topbar() {
   const titles: Record<string, string> = {
     "/admin": "Dashboard",
     "/admin/leads": "Leads",
+    "/admin/investors": "Investors & Capital",
     "/admin/withdrawals": "Withdrawals",
     "/admin/system": "System & Finance",
     "/admin/system/profit-events": "Profit Events",
