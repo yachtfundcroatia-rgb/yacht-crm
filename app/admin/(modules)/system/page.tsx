@@ -1,72 +1,77 @@
 "use client";
 
 import Link from "next/link";
+import { TrendingUp, DollarSign, Gift, Users, Ship } from "lucide-react";
 
 export default function SystemPage() {
-  return (
-    <div style={{ padding: 20 }}>
-      <h1 style={{ fontSize: 26, marginBottom: 30 }}>System & Finance</h1>
+  const cards = [
+    {
+      title: "Profit Events",
+      description: "Register new profit events for investments",
+      href: "/admin/system/profit-events",
+      icon: TrendingUp,
+      color: "bg-green-50",
+      iconColor: "text-green-600",
+    },
+    {
+      title: "Profit Release",
+      description: "Distribute profit to investors",
+      href: "/admin/system/profit-release",
+      icon: DollarSign,
+      color: "bg-blue-50",
+      iconColor: "text-[#137fec]",
+    },
+    {
+      title: "Discretionary Bonus",
+      description: "Add manual investor bonuses",
+      href: "/admin/system/discretionary-bonus",
+      icon: Gift,
+      color: "bg-purple-50",
+      iconColor: "text-purple-600",
+    },
+    {
+      title: "Admin Management",
+      description: "Manage admin accounts and roles",
+      href: "/admin/system/admins",
+      icon: Users,
+      color: "bg-orange-50",
+      iconColor: "text-orange-600",
+    },
+    {
+      title: "Investments",
+      description: "Manage investment opportunities on the website",
+      href: "/admin/system/investments",
+      icon: Ship,
+      color: "bg-cyan-50",
+      iconColor: "text-cyan-600",
+    },
+  ];
 
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
-          gap: 20,
-        }}
-      >
-        <SystemCard
-          title="Profit Events"
-          description="Register new profit events"
-          href="/admin/system/profit-events"
-        />
-        <SystemCard
-          title="Profit Release"
-          description="Distribute profit to investors"
-          href="/admin/system/profit-release"
-        />
-        <SystemCard
-          title="Discretionary Bonus"
-          description="Add manual investor bonus"
-          href="/admin/system/discretionary-bonus"
-        />
-        <SystemCard
-          title="Admin Management"
-          description="Manage admin accounts"
-          href="/admin/system/admins"
-        />
-        <SystemCard
-          title="Investments"
-          description="Manage investment opportunities on the website"
-          href="/admin/system/investments"
-        />
+  return (
+    <div className="max-w-5xl">
+      <div className="mb-8">
+        <h1 className="text-2xl font-black text-[#0a192f] mb-1">System & Finance</h1>
+        <p className="text-gray-500 text-sm">Financial operations and system management</p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+        {cards.map((card) => {
+          const Icon = card.icon;
+          return (
+            <Link
+              key={card.href}
+              href={card.href}
+              className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-md transition-shadow no-underline group"
+            >
+              <div className={`w-12 h-12 ${card.color} rounded-xl flex items-center justify-center mb-4`}>
+                <Icon className={`w-6 h-6 ${card.iconColor}`} />
+              </div>
+              <h3 className="font-black text-[#0a192f] mb-1 group-hover:text-[#137fec] transition-colors">{card.title}</h3>
+              <p className="text-sm text-gray-500 leading-relaxed">{card.description}</p>
+            </Link>
+          );
+        })}
       </div>
     </div>
-  );
-}
-
-function SystemCard({
-  title,
-  description,
-  href,
-}: {
-  title: string;
-  description: string;
-  href: string;
-}) {
-  return (
-    <Link
-      href={href}
-      style={{
-        border: "1px solid #ddd",
-        padding: 20,
-        borderRadius: 6,
-        textDecoration: "none",
-        color: "black",
-        background: "#fafafa",
-      }}
-    >
-      <h3 style={{ marginBottom: 10 }}>{title}</h3>
-      <p style={{ fontSize: 14, color: "#666" }}>{description}</p>
-    </Link>
   );
 }
