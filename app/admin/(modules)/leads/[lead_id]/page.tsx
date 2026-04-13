@@ -109,7 +109,7 @@ export default function LeadDetailPage() {
       const res = await fetch(`${API_URL}/api/admin/leads/add-note`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ note }),
+        body: JSON.stringify({ lead_id: leadId, note }),
       });
       if (res.ok) {
         setNoteMsg("Note saved");
