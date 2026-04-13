@@ -46,7 +46,7 @@ export default function InvestorLogin() {
       <header className="border-b border-gray-100 px-8 py-4 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2 no-underline">
           <span className="text-2xl">⛵</span>
-          <span className="font-black text-lg tracking-tight uppercase text-[#0a192f]">Yacht Fund</span>
+          <img src="https://rhmgpxpirrclysplitzz.supabase.co/storage/v1/object/public/assets/YACHT%20FUND%20blue%20main%20.png" alt="Yacht Fund" className="h-8 w-auto object-contain" />
         </Link>
         <Link
           href="/login"
