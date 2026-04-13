@@ -318,8 +318,8 @@ export default function LeadDetailPage() {
           </div>
         )}
 
-        {/* Reservation */}
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+        {/* Reservation — superadmin only */}
+        {admin?.role === "superadmin" && <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
           <h2 className="font-black text-[#0a192f] mb-4">Reservation</h2>
           {!reservation && (
             <div>
@@ -363,10 +363,10 @@ export default function LeadDetailPage() {
               )}
             </div>
           )}
-        </div>
+        </div>}
 
-        {/* Confirm Capital Payment — shown after conversion */}
-        {hasCapitalPending && (
+        {/* Confirm Capital Payment — superadmin only */}
+        {admin?.role === "superadmin" && hasCapitalPending && (
           <div className="bg-white rounded-2xl border border-green-100 shadow-sm p-6 lg:col-span-2">
             <div className="flex items-center gap-2 mb-2">
               <CheckCircle className="w-5 h-5 text-green-600" />
