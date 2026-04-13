@@ -188,7 +188,6 @@ export default function InvestorDashboard() {
       <header className="bg-white border-b border-gray-100 px-6 lg:px-10 h-16 flex items-center justify-between sticky top-0 z-40">
         <Link href="/" className="flex items-center gap-2 no-underline">
           <img src="https://rhmgpxpirrclysplitzz.supabase.co/storage/v1/object/public/assets/YACHT%20FUND%20blue%20main%20.png" alt="Yacht Fund" className="h-8 w-auto object-contain" />
-          <span className="font-black text-base tracking-tight uppercase text-[#0a192f]">Yacht Fund</span>
         </Link>
 
         <nav className="flex items-center gap-1">
