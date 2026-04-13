@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { useLang } from "@/lib/LanguageContext";
+import { t } from "@/lib/translations";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL!;
 
@@ -10,6 +12,8 @@ interface Props {
 }
 
 export default function CallModal({ open, onClose }: Props) {
+  const { lang } = useLang();
+  const T = t[lang].modal;
   const [form, setForm] = useState({ full_name: "", email: "", phone: "", preferred_call_time: "" });
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -44,8 +48,8 @@ export default function CallModal({ open, onClose }: Props) {
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md relative">
         <button onClick={handleClose} className="absolute top-4 right-5 text-gray-400 hover:text-gray-600 text-3xl font-light leading-none">×</button>
         <div className="p-8">
-          <h3 className="text-2xl font-black text-[#0a192f] mb-1">Book a Call</h3>
-          <p className="text-sm text-gray-500 mb-6">Schedule a call with our investment team</p>
+          <h3 className="text-2xl font-black text-[#0a192f] mb-1">{T.call_title}</h3>
+          <p className="text-sm text-gray-500 mb-6">{T.call_subtitle}</p>
 
           {success ? (
             <div className="text-center py-8">
@@ -54,46 +58,43 @@ export default function CallModal({ open, onClose }: Props) {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
               </div>
-              <p className="text-lg font-bold text-green-600">We'll call you at your preferred time!</p>
-              <button onClick={handleClose} className="mt-4 text-sm text-gray-500 hover:text-gray-700">Close</button>
+              <p className="text-lg font-bold text-green-600">{T.call_success}</p>
+              <button onClick={handleClose} className="mt-4 text-sm text-gray-500 hover:text-gray-700">{T.invest_close}</button>
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1">Full Name *</label>
+                <label className="block text-sm font-semibold text-gray-700 mb-1">{T.invest_name}</label>
                 <input type="text" required value={form.full_name}
                   onChange={(e) => setForm({ ...form, full_name: e.target.value })}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#137fec] outline-none text-sm"
-                  placeholder="John Smith" />
+                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#137fec] outline-none text-sm" />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1">Email *</label>
+                <label className="block text-sm font-semibold text-gray-700 mb-1">{T.invest_email}</label>
                 <input type="email" required value={form.email}
                   onChange={(e) => setForm({ ...form, email: e.target.value })}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#137fec] outline-none text-sm"
-                  placeholder="john@example.com" />
+                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#137fec] outline-none text-sm" />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1">Phone *</label>
+                <label className="block text-sm font-semibold text-gray-700 mb-1">{T.invest_phone}</label>
                 <input type="tel" required value={form.phone}
                   onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#137fec] outline-none text-sm"
-                  placeholder="+48 123 456 789" />
+                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#137fec] outline-none text-sm" />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1">Preferred Call Time</label>
+                <label className="block text-sm font-semibold text-gray-700 mb-1">{T.call_time}</label>
                 <select value={form.preferred_call_time}
                   onChange={(e) => setForm({ ...form, preferred_call_time: e.target.value })}
                   className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#137fec] outline-none text-sm bg-white">
-                  <option value="">Select time</option>
-                  <option value="morning">Morning (9:00 - 12:00)</option>
-                  <option value="afternoon">Afternoon (12:00 - 17:00)</option>
-                  <option value="evening">Evening (17:00 - 20:00)</option>
+                  <option value="">—</option>
+                  <option value="morning">{T.call_morning}</option>
+                  <option value="afternoon">{T.call_afternoon}</option>
+                  <option value="evening">{T.call_evening}</option>
                 </select>
               </div>
               <button type="submit" disabled={loading}
                 className="w-full py-3 bg-[#0a192f] text-white rounded-lg font-bold hover:bg-[#0f2848] transition-colors disabled:opacity-50">
-                {loading ? "Sending..." : "Book My Call"}
+                {loading ? T.invest_sending : T.call_submit}
               </button>
             </form>
           )}

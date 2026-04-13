@@ -1,8 +1,16 @@
+"use client";
+
 import Link from "next/link";
+import { useLang } from "@/lib/LanguageContext";
+import { t } from "@/lib/translations";
 
 const LOGO_URL = "https://rhmgpxpirrclysplitzz.supabase.co/storage/v1/object/public/assets/YACHT%20FUND%20white%20main%20%20.png";
 
 export default function SiteFooter() {
+  const { lang } = useLang();
+  const T = t[lang].footer;
+  const Tn = t[lang].nav;
+
   return (
     <footer className="bg-[#060f18] text-gray-400 py-16 px-6 lg:px-20">
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-10">
@@ -10,9 +18,7 @@ export default function SiteFooter() {
           <div className="flex items-center gap-3 mb-4">
             <img src={LOGO_URL} alt="Yacht Fund" className="h-8 w-auto object-contain" />
           </div>
-          <p className="text-sm text-gray-400 leading-relaxed mb-4">
-            Premier yacht charter investment fund specializing in the Adriatic Sea. A modern alternative to real estate investment.
-          </p>
+          <p className="text-sm text-gray-400 leading-relaxed mb-4">{T.desc}</p>
           <p className="text-xs text-gray-500">
             Blue Wave Group d.o.o<br />
             Bukovačka ulica 23<br />
@@ -21,25 +27,23 @@ export default function SiteFooter() {
           </p>
         </div>
         <div>
-          <h4 className="text-white font-bold mb-4 text-sm uppercase tracking-wide">Fund</h4>
+          <h4 className="text-white font-bold mb-4 text-sm uppercase tracking-wide">{T.fund}</h4>
           <ul className="space-y-2 text-sm">
-            <li><Link href="/how-it-works" className="hover:text-white transition-colors">How it Works</Link></li>
-            <li><Link href="/investments" className="hover:text-white transition-colors">Investments</Link></li>
-            <li><Link href="/security" className="hover:text-white transition-colors">Security</Link></li>
-            <li><Link href="/security" className="hover:text-white transition-colors">Exit Strategy</Link></li>
+            <li><Link href="/how-it-works" className="hover:text-white transition-colors">{Tn.how_it_works}</Link></li>
+            <li><Link href="/investments" className="hover:text-white transition-colors">{Tn.investments}</Link></li>
+            <li><Link href="/security" className="hover:text-white transition-colors">{T.exit}</Link></li>
           </ul>
         </div>
         <div>
-          <h4 className="text-white font-bold mb-4 text-sm uppercase tracking-wide">Company</h4>
+          <h4 className="text-white font-bold mb-4 text-sm uppercase tracking-wide">{T.company}</h4>
           <ul className="space-y-2 text-sm">
-            <li><Link href="/about" className="hover:text-white transition-colors">About Us</Link></li>
-            <li><Link href="/security" className="hover:text-white transition-colors">Legal Disclosures</Link></li>
-            <li><Link href="/security" className="hover:text-white transition-colors">Privacy Policy</Link></li>
-            <li><Link href="/contact" className="hover:text-white transition-colors">Contact</Link></li>
+            <li><Link href="/about" className="hover:text-white transition-colors">{Tn.about}</Link></li>
+            <li><Link href="/security" className="hover:text-white transition-colors">{T.legal}</Link></li>
+            <li><Link href="/security" className="hover:text-white transition-colors">{T.privacy}</Link></li>
           </ul>
         </div>
         <div>
-          <h4 className="text-white font-bold mb-4 text-sm uppercase tracking-wide">Contact</h4>
+          <h4 className="text-white font-bold mb-4 text-sm uppercase tracking-wide">{T.contact}</h4>
           <ul className="space-y-3 text-sm">
             <li>
               <a href="mailto:hi@yacht.fund" className="hover:text-white transition-colors flex items-center gap-2">
@@ -69,8 +73,8 @@ export default function SiteFooter() {
         </div>
       </div>
       <div className="max-w-7xl mx-auto mt-12 pt-8 border-t border-gray-800 flex flex-col md:flex-row justify-between items-center text-xs text-gray-500 gap-4">
-        <span>© {new Date().getFullYear()} Blue Wave Group d.o.o. All rights reserved.</span>
-        <span>Financial investments in yachting carry risks. Consult your advisor.</span>
+        <span>© {new Date().getFullYear()} {T.copyright}</span>
+        <span>{T.disclaimer}</span>
       </div>
     </footer>
   );

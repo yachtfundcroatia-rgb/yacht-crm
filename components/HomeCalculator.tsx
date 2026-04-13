@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useRef } from "react";
 import InvestModal from "./InvestModal";
+import { useLang } from "@/lib/LanguageContext";
+import { t } from "@/lib/translations";
 
 function useCountUp(target: number, duration: number = 1200) {
   const [value, setValue] = useState(0);
@@ -13,18 +15,14 @@ function useCountUp(target: number, duration: number = 1200) {
     if (frameRef.current) cancelAnimationFrame(frameRef.current);
     startRef.current = null;
     startValueRef.current = value;
-
     const animate = (timestamp: number) => {
       if (!startRef.current) startRef.current = timestamp;
       const elapsed = timestamp - startRef.current;
       const progress = Math.min(elapsed / duration, 1);
       const eased = 1 - Math.pow(1 - progress, 3);
       setValue(Math.round(startValueRef.current + (target - startValueRef.current) * eased));
-      if (progress < 1) {
-        frameRef.current = requestAnimationFrame(animate);
-      }
+      if (progress < 1) frameRef.current = requestAnimationFrame(animate);
     };
-
     frameRef.current = requestAnimationFrame(animate);
     return () => { if (frameRef.current) cancelAnimationFrame(frameRef.current); };
   }, [target, duration]);
@@ -50,16 +48,13 @@ function useCountUpOnce(target: number, duration: number = 1500) {
     if (!started) return;
     let frame: number;
     let startTime: number | null = null;
-
     const animate = (timestamp: number) => {
       if (!startTime) startTime = timestamp;
-      const elapsed = timestamp - startTime;
-      const progress = Math.min(elapsed / duration, 1);
+      const progress = Math.min((timestamp - startTime) / duration, 1);
       const eased = 1 - Math.pow(1 - progress, 3);
       setValue(Math.round(target * eased));
       if (progress < 1) frame = requestAnimationFrame(animate);
     };
-
     frame = requestAnimationFrame(animate);
     return () => cancelAnimationFrame(frame);
   }, [started, target, duration]);
@@ -69,21 +64,17 @@ function useCountUpOnce(target: number, duration: number = 1500) {
 
 function ROIBadge() {
   const { value, ref } = useCountUpOnce(12, 1500);
-  return (
-    <div ref={ref} className="text-3xl font-black text-[#137fec]">
-      {value.toFixed(1)}%
-    </div>
-  );
+  return <div ref={ref} className="text-3xl font-black text-[#137fec]">{value.toFixed(1)}%</div>;
 }
 
 export default function HomeCalculator() {
+  const { lang } = useLang();
+  const T = t[lang].home;
   const [investment, setInvestment] = useState(100000);
   const [investOpen, setInvestOpen] = useState(false);
 
-  const targetReturn = 0.12;
-  const annualYield = investment * targetReturn;
+  const annualYield = investment * 0.12;
   const monthlyPayout = annualYield / 12;
-
   const animatedYield = useCountUp(annualYield, 400);
   const animatedMonthly = useCountUp(monthlyPayout, 400);
 
@@ -92,25 +83,15 @@ export default function HomeCalculator() {
       <section className="py-20 px-6 lg:px-20">
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
           <div>
-            <h2 className="text-3xl lg:text-4xl font-black text-[#0a192f] mb-6">
-              Project Your Earnings
-            </h2>
-            <p className="text-gray-600 text-lg leading-relaxed mb-10">
-              Our Yacht Fund targets a consistent 12% annual net return for our partners.
-              Use our interactive tool to see how your investment can grow over time
-              in the thriving Croatian charter market.
-            </p>
+            <h2 className="text-3xl lg:text-4xl font-black text-[#0a192f] mb-6">{T.calc_title}</h2>
+            <p className="text-gray-600 text-lg leading-relaxed mb-10">{T.calc_desc}</p>
             <div className="grid grid-cols-2 gap-4">
               <div className="bg-[#f8faff] rounded-xl p-6 border border-blue-50 shadow-md">
-                <div className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">
-                  Target Return
-                </div>
+                <div className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">{T.calc_target}</div>
                 <ROIBadge />
               </div>
               <div className="bg-[#f8faff] rounded-xl p-6 border border-blue-50 shadow-md">
-                <div className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">
-                  Minimum Unit
-                </div>
+                <div className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">{T.calc_min}</div>
                 <div className="text-3xl font-black text-[#0a192f]">€10,000</div>
               </div>
             </div>
@@ -124,61 +105,36 @@ export default function HomeCalculator() {
                   <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
                 </svg>
               </div>
-              <span className="font-bold text-[#0a192f]">Profitability Calculator</span>
+              <span className="font-bold text-[#0a192f]">{T.calc_calc_title}</span>
             </div>
-
             <div className="mb-6">
               <div className="flex justify-between items-center mb-3">
-                <label className="text-sm font-semibold text-gray-700">Investment Amount (€)</label>
-                <span className="text-2xl font-black text-[#137fec]">
-                  €{investment.toLocaleString()}
-                </span>
+                <label className="text-sm font-semibold text-gray-700">{T.calc_amount}</label>
+                <span className="text-2xl font-black text-[#137fec]">€{investment.toLocaleString()}</span>
               </div>
-              <input
-                type="range"
-                min="10000"
-                max="500000"
-                step="10000"
-                value={investment}
+              <input type="range" min="10000" max="500000" step="10000" value={investment}
                 onChange={(e) => setInvestment(Number(e.target.value))}
                 className="w-full h-2 bg-blue-100 rounded-lg appearance-none cursor-pointer"
-                style={{ accentColor: "#0a192f" }}
-              />
-              <div className="flex justify-between text-xs text-gray-400 mt-1">
-                <span>€10k</span>
-                <span>€500k</span>
-              </div>
+                style={{ accentColor: "#0a192f" }} />
+              <div className="flex justify-between text-xs text-gray-400 mt-1"><span>€10k</span><span>€500k</span></div>
             </div>
-
             <div className="grid grid-cols-2 gap-4 mb-6">
               <div>
-                <div className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-1">
-                  Annual Yield
-                </div>
-                <div className="text-2xl font-black text-[#137fec]">
-                  €{animatedYield.toLocaleString()}
-                </div>
+                <div className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-1">{T.calc_annual}</div>
+                <div className="text-2xl font-black text-[#137fec]">€{animatedYield.toLocaleString()}</div>
               </div>
               <div>
-                <div className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-1">
-                  Monthly Payout
-                </div>
-                <div className="text-2xl font-black text-[#137fec]">
-                  €{animatedMonthly.toLocaleString()}
-                </div>
+                <div className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-1">{T.calc_monthly}</div>
+                <div className="text-2xl font-black text-[#137fec]">€{animatedMonthly.toLocaleString()}</div>
               </div>
             </div>
-
-            <button
-              onClick={() => setInvestOpen(true)}
-              className="w-full py-4 bg-[#0a192f] text-white rounded-xl font-bold hover:bg-[#0f2848] transition-colors flex items-center justify-center gap-2"
-            >
-              Get Detailed Proposal →
+            <button onClick={() => setInvestOpen(true)}
+              className="w-full py-4 bg-[#0a192f] text-white rounded-xl font-bold hover:bg-[#0f2848] transition-colors">
+              {T.calc_cta}
             </button>
           </div>
         </div>
       </section>
-
       <InvestModal open={investOpen} onClose={() => setInvestOpen(false)} />
     </>
   );

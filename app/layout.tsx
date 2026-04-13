@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AdminProvider } from "@/app/context/AdminContext";
+import { LanguageProvider } from "@/lib/LanguageContext";
 import ScrollToTop from "@/components/ScrollToTop";
 
 const geistSans = Geist({
@@ -26,12 +27,12 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <AdminProvider>
-          {children}
-          <ScrollToTop />
+          <LanguageProvider>
+            {children}
+            <ScrollToTop />
+          </LanguageProvider>
         </AdminProvider>
       </body>
     </html>
