@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useAdmin } from "@/app/context/AdminContext";
-import { TrendingUp, Pencil, Plus, X } from "lucide-react";
+import { TrendingUp, Pencil, Plus, X, Image } from "lucide-react";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL!;
 
@@ -12,6 +12,7 @@ interface Investment {
   description: string;
   location: string;
   image_url: string;
+  images: string[];
   target_roi: number;
   min_investment: number;
   total_slots: number;
@@ -49,6 +50,7 @@ export default function InvestmentsAdminPage() {
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(EMPTY_FORM);
+  const [images, setImages] = useState<string[]>(["", "", "", "", "", ""]);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ text: string; ok: boolean } | null>(null);
   const [statusUpdates, setStatusUpdates] = useState<Record<string, string>>({});
@@ -73,7 +75,14 @@ export default function InvestmentsAdminPage() {
 
   useEffect(() => { if (token) fetchInvestments(); }, [token]);
 
-  function openCreate() { setForm(EMPTY_FORM); setEditingId(null); setShowForm(true); setMessage(null); }
+  function openCreate() {
+    setForm(EMPTY_FORM);
+    setImages(["", "", "", "", "", ""]);
+    setEditingId(null);
+    setShowForm(true);
+    setMessage(null);
+  }
+
   function openEdit(inv: Investment) {
     setForm({
       id: inv.id, name: inv.name || "", description: inv.description || "",
@@ -84,7 +93,12 @@ export default function InvestmentsAdminPage() {
       vessel_cabins: inv.vessel_cabins?.toString() || "", status: inv.status || "fundraising",
       currency: inv.currency || "EUR", display_order: inv.display_order?.toString() || "0",
     });
-    setEditingId(inv.id); setShowForm(true); setMessage(null);
+    const imgs = [...(inv.images || [])];
+    while (imgs.length < 6) imgs.push("");
+    setImages(imgs);
+    setEditingId(inv.id);
+    setShowForm(true);
+    setMessage(null);
   }
 
   async function handleSave(e: React.FormEvent) {
@@ -97,6 +111,7 @@ export default function InvestmentsAdminPage() {
         total_slots: Number(form.total_slots), available_slots: Number(form.available_slots),
         vessel_year: Number(form.vessel_year), vessel_cabins: Number(form.vessel_cabins),
         display_order: Number(form.display_order),
+        images: images.filter(url => url.trim()),
       };
       const url = editingId ? `${API_URL}/api/admin/investments/${editingId}` : `${API_URL}/api/admin/investments`;
       const res = await fetch(url, {
@@ -114,8 +129,7 @@ export default function InvestmentsAdminPage() {
   async function handleStatusUpdate(invId: string) {
     const newStatus = statusUpdates[invId];
     if (!newStatus) return;
-    setUpdatingStatus(invId);
-    setStatusMsg(null);
+    setUpdatingStatus(invId); setStatusMsg(null);
     try {
       const res = await fetch(`${API_URL}/api/admin/investments/${invId}`, {
         method: "PATCH",
@@ -149,21 +163,24 @@ export default function InvestmentsAdminPage() {
         </div>
       )}
 
-      {/* Investment list with inline status change */}
+      {/* Investment list */}
       {!loading && investments.length > 0 && (
         <div className="space-y-4 mb-6">
           {investments.map((inv) => (
             <div key={inv.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
               <div className="flex items-start gap-4">
-                {inv.image_url && (
-                  <img src={inv.image_url} alt={inv.name} className="w-20 h-14 object-cover rounded-xl flex-shrink-0" />
+                {(inv.images?.[0] || inv.image_url) && (
+                  <img src={inv.images?.[0] || inv.image_url} alt={inv.name} className="w-20 h-14 object-cover rounded-xl flex-shrink-0" />
                 )}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1 flex-wrap">
                     <span className="font-black text-[#0a192f]">{inv.name}</span>
-                    <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-bold ${STATUS_STYLES[inv.status] || "bg-gray-100 text-gray-600"}`}>
-                      {inv.status}
-                    </span>
+                    <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-bold ${STATUS_STYLES[inv.status] || "bg-gray-100 text-gray-600"}`}>{inv.status}</span>
+                    {inv.images?.length > 0 && (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-gray-50 text-gray-500 border border-gray-200">
+                        <Image className="w-3 h-3" />{inv.images.length} photos
+                      </span>
+                    )}
                   </div>
                   <div className="text-xs text-gray-400">
                     {inv.location} · ROI: {inv.target_roi}% · Slots: {inv.available_slots}/{inv.total_slots} · Min: {inv.currency} {Number(inv.min_investment).toLocaleString()}
@@ -173,27 +190,19 @@ export default function InvestmentsAdminPage() {
                   <Pencil className="w-3 h-3" />Edit
                 </button>
               </div>
-
-              {/* Inline status change */}
               <div className="mt-4 pt-4 border-t border-gray-50 flex items-center gap-3">
                 <TrendingUp className="w-4 h-4 text-[#137fec] flex-shrink-0" />
                 <span className="text-xs font-bold text-gray-500 uppercase tracking-wide flex-shrink-0">Change Status:</span>
-                <select
-                  value={statusUpdates[inv.id] || inv.status}
-                  onChange={(e) => setStatusUpdates({ ...statusUpdates, [inv.id]: e.target.value })}
-                  className="flex-1 px-3 py-1.5 border border-gray-200 rounded-lg text-sm outline-none focus:border-[#137fec] bg-white"
-                >
+                <select value={statusUpdates[inv.id] || inv.status} onChange={(e) => setStatusUpdates({ ...statusUpdates, [inv.id]: e.target.value })}
+                  className="flex-1 px-3 py-1.5 border border-gray-200 rounded-lg text-sm outline-none focus:border-[#137fec] bg-white">
                   <option value="fundraising">Fundraising</option>
                   <option value="active">Active (enables profit distribution)</option>
                   <option value="upcoming">Upcoming</option>
                   <option value="coming_soon">Coming Soon</option>
                   <option value="closed">Closed</option>
                 </select>
-                <button
-                  onClick={() => handleStatusUpdate(inv.id)}
-                  disabled={updatingStatus === inv.id || statusUpdates[inv.id] === inv.status}
-                  className="px-4 py-1.5 bg-[#137fec] text-white rounded-lg text-xs font-bold hover:bg-[#0f6fd4] transition-colors disabled:opacity-40 flex-shrink-0"
-                >
+                <button onClick={() => handleStatusUpdate(inv.id)} disabled={updatingStatus === inv.id || statusUpdates[inv.id] === inv.status}
+                  className="px-4 py-1.5 bg-[#137fec] text-white rounded-lg text-xs font-bold hover:bg-[#0f6fd4] transition-colors disabled:opacity-40 flex-shrink-0">
                   {updatingStatus === inv.id ? "..." : "Update"}
                 </button>
                 {statusMsg?.id === inv.id && (
@@ -241,11 +250,29 @@ export default function InvestmentsAdminPage() {
                 <label className={labelClass}>Description</label>
                 <textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={3} className={`${inputClass} resize-none`} />
               </div>
+
+              {/* Gallery images */}
               <div className="md:col-span-2">
-                <label className={labelClass}>Image URL</label>
-                <input value={form.image_url} onChange={(e) => setForm({ ...form, image_url: e.target.value })} className={inputClass} />
-                {form.image_url && <img src={form.image_url} alt="preview" className="mt-2 h-16 rounded-lg object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />}
+                <label className={labelClass}>
+                  <span className="flex items-center gap-1.5"><Image className="w-3.5 h-3.5" />Gallery Images (up to 6)</span>
+                </label>
+                <div className="space-y-2">
+                  {images.map((url, i) => (
+                    <div key={i} className="flex gap-2 items-center">
+                      <span className="text-xs font-bold text-gray-400 w-6 flex-shrink-0">{i + 1}.</span>
+                      <input
+                        value={url}
+                        onChange={(e) => { const newImgs = [...images]; newImgs[i] = e.target.value; setImages(newImgs); }}
+                        placeholder={i === 0 ? "Main photo URL (Supabase Storage)" : `Photo ${i + 1} URL (optional)`}
+                        className={inputClass}
+                      />
+                      {url && <img src={url} alt="" className="w-12 h-8 object-cover rounded-lg flex-shrink-0" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />}
+                    </div>
+                  ))}
+                </div>
+                <p className="text-xs text-gray-400 mt-2">First image is used as the main photo. Paste Supabase Storage URLs.</p>
               </div>
+
               <div>
                 <label className={labelClass}>Target ROI (%)</label>
                 <input type="number" step="0.1" value={form.target_roi} onChange={(e) => setForm({ ...form, target_roi: e.target.value })} className={inputClass} />
@@ -261,7 +288,6 @@ export default function InvestmentsAdminPage() {
               <div>
                 <label className={labelClass}>Available Slots</label>
                 <input type="number" value={form.available_slots} onChange={(e) => setForm({ ...form, available_slots: e.target.value })} className={inputClass} />
-                <p className="text-xs text-gray-400 mt-1">Display only — no financial impact</p>
               </div>
               <div>
                 <label className={labelClass}>Vessel Year</label>
