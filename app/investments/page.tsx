@@ -6,6 +6,7 @@ import SiteFooter from "@/components/SiteFooter";
 import InvestModal from "@/components/InvestModal";
 import { useLang } from "@/lib/LanguageContext";
 import { t } from "@/lib/translations";
+import { ChevronLeft, ChevronRight, X } from "lucide-react";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL!;
 
@@ -15,6 +16,7 @@ interface Investment {
   description: string;
   location: string;
   image_url: string;
+  images: string[];
   target_roi: number;
   min_investment: number;
   total_slots: number;
@@ -26,7 +28,42 @@ interface Investment {
   currency: string;
 }
 
-function useCountUpOnce(target: number, duration: number = 1200) {
+function ImageGallery({ images, mainImage }: { images: string[]; mainImage: string | null }) {
+  const allImages = images.length > 0 ? images : mainImage ? [mainImage] : [];
+  const [current, setCurrent] = useState(0);
+
+  if (allImages.length === 0) {
+    return <div className="h-72 bg-gray-100 rounded-xl flex items-center justify-center text-gray-400">No images</div>;
+  }
+  if (allImages.length === 1) {
+    return <div className="h-72 bg-cover bg-center rounded-xl" style={{ backgroundImage: `url(${allImages[0]})` }} />;
+  }
+
+  return (
+    <div className="relative h-72 rounded-xl overflow-hidden">
+      <div className="absolute inset-0 bg-cover bg-center transition-all duration-300" style={{ backgroundImage: `url(${allImages[current]})` }} />
+      <button onClick={() => setCurrent(c => (c - 1 + allImages.length) % allImages.length)}
+        className="absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 bg-white/80 rounded-full flex items-center justify-center hover:bg-white transition-colors shadow-md z-10">
+        <ChevronLeft className="w-4 h-4 text-[#0a192f]" />
+      </button>
+      <button onClick={() => setCurrent(c => (c + 1) % allImages.length)}
+        className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 bg-white/80 rounded-full flex items-center justify-center hover:bg-white transition-colors shadow-md z-10">
+        <ChevronRight className="w-4 h-4 text-[#0a192f]" />
+      </button>
+      <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
+        {allImages.map((_, i) => (
+          <button key={i} onClick={() => setCurrent(i)}
+            className={`h-2 rounded-full transition-all ${i === current ? "bg-white w-4" : "bg-white/50 w-2"}`} />
+        ))}
+      </div>
+      <div className="absolute top-3 right-3 px-2 py-1 bg-black/40 text-white text-xs font-bold rounded-full z-10">
+        {current + 1}/{allImages.length}
+      </div>
+    </div>
+  );
+}
+
+function StatCard({ target, suffix, label }: { target: number; suffix: string; label: string }) {
   const [value, setValue] = useState(0);
   const [started, setStarted] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -44,41 +81,20 @@ function useCountUpOnce(target: number, duration: number = 1200) {
     let startTime: number | null = null;
     const animate = (timestamp: number) => {
       if (!startTime) startTime = timestamp;
-      const progress = Math.min((timestamp - startTime) / duration, 1);
+      const progress = Math.min((timestamp - startTime) / 1200, 1);
       const eased = 1 - Math.pow(1 - progress, 3);
       setValue(Math.round(target * eased));
       if (progress < 1) frame = requestAnimationFrame(animate);
     };
     frame = requestAnimationFrame(animate);
     return () => cancelAnimationFrame(frame);
-  }, [started, target, duration]);
-  return { value, ref };
-}
+  }, [started, target]);
 
-export default function InvestmentsPage() {
   return (
-    <div className="min-h-screen bg-[#f6f7f8]">
-      <SiteHeader />
-      <main>
-        <InvestmentsHero />
-        <InvestmentsList />
-        <InvestmentsStats />
-      </main>
-      <SiteFooter />
+    <div ref={ref} className="text-center">
+      <div className="text-4xl font-black text-[#137fec] mb-2">{value}{suffix}</div>
+      <div className="text-sm text-gray-500 uppercase tracking-wide font-semibold">{label}</div>
     </div>
-  );
-}
-
-function InvestmentsHero() {
-  const { lang } = useLang();
-  const T = t[lang].inv;
-  return (
-    <section className="px-6 lg:px-20 py-16 bg-white">
-      <div className="max-w-7xl mx-auto">
-        <h1 className="text-4xl lg:text-5xl font-black text-[#0a192f] mb-6">{T.h1}</h1>
-        <p className="text-lg text-gray-600 max-w-2xl leading-relaxed">{T.p}</p>
-      </div>
-    </section>
   );
 }
 
@@ -88,14 +104,20 @@ function InvestmentCard({ inv, onInvest }: { inv: Investment; onInvest: (inv: In
   const [modalOpen, setModalOpen] = useState(false);
   const isActive = inv.status === "fundraising" || inv.status === "active";
   const slotsPercent = inv.total_slots ? Math.round(((inv.total_slots - inv.available_slots) / inv.total_slots) * 100) : 0;
+  const mainImage = inv.images?.[0] || inv.image_url;
 
   return (
     <>
       <div className={`bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 flex flex-col ${!isActive ? "opacity-60 grayscale" : ""}`}>
-        <div className="relative h-52 bg-cover bg-center" style={{ backgroundImage: `url(${inv.image_url})` }}>
+        <div className="relative h-52 bg-cover bg-center bg-gray-100" style={{ backgroundImage: mainImage ? `url(${mainImage})` : undefined }}>
           <div className={`absolute top-4 left-4 px-3 py-1 text-white text-xs font-black rounded-full uppercase tracking-wide ${isActive ? "bg-green-500" : "bg-gray-500"}`}>
             {isActive ? T.badge_active : T.badge_coming}
           </div>
+          {inv.images?.length > 1 && (
+            <div className="absolute bottom-3 right-3 px-2 py-1 bg-black/50 text-white text-xs font-bold rounded-full">
+              +{inv.images.length - 1} photos
+            </div>
+          )}
         </div>
         <div className="p-6 flex flex-col flex-1">
           <h3 className="text-lg font-black text-[#0a192f] mb-1">{inv.name}</h3>
@@ -134,9 +156,13 @@ function InvestmentCard({ inv, onInvest }: { inv: Investment; onInvest: (inv: In
       {modalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto relative">
-            <button onClick={() => setModalOpen(false)} className="absolute top-4 right-5 text-gray-400 hover:text-gray-600 text-3xl font-light leading-none z-10">×</button>
-            <div className="h-64 bg-cover bg-center rounded-t-2xl" style={{ backgroundImage: `url(${inv.image_url})` }} />
-            <div className="p-8">
+            <button onClick={() => setModalOpen(false)} className="absolute top-4 right-4 z-10 w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-md hover:bg-gray-100 transition-colors">
+              <X className="w-4 h-4 text-gray-600" />
+            </button>
+            <div className="p-4">
+              <ImageGallery images={inv.images || []} mainImage={inv.image_url} />
+            </div>
+            <div className="px-8 pb-8">
               <div className="flex items-start justify-between mb-4">
                 <div>
                   <h2 className="text-2xl font-black text-[#0a192f] mb-1">{inv.name}</h2>
@@ -219,26 +245,36 @@ function InvestmentsList() {
 function InvestmentsStats() {
   const { lang } = useLang();
   const T = t[lang].inv;
-  const stats = [
-    { target: 300, suffix: "+", label: T.stat1 },
-    { target: 10, suffix: "%", label: T.stat2 },
-    { target: 72, suffix: "%", label: T.stat3 },
-  ];
   return (
     <section className="px-6 lg:px-20 py-16 bg-white">
       <div className="max-w-7xl mx-auto">
         <div className="grid grid-cols-2 md:grid-cols-3 gap-8">
-          {stats.map((s) => {
-            const { value, ref } = useCountUpOnce(s.target);
-            return (
-              <div key={s.label} ref={ref} className="text-center">
-                <div className="text-4xl font-black text-[#137fec] mb-2">{value}{s.suffix}</div>
-                <div className="text-sm text-gray-500 uppercase tracking-wide font-semibold">{s.label}</div>
-              </div>
-            );
-          })}
+          <StatCard target={300} suffix="+" label={T.stat1} />
+          <StatCard target={10} suffix="%" label={T.stat2} />
+          <StatCard target={72} suffix="%" label={T.stat3} />
         </div>
       </div>
     </section>
+  );
+}
+
+export default function InvestmentsPage() {
+  const { lang } = useLang();
+  const T = t[lang].inv;
+  return (
+    <div className="min-h-screen bg-[#f6f7f8]">
+      <SiteHeader />
+      <main>
+        <section className="px-6 lg:px-20 py-16 bg-white">
+          <div className="max-w-7xl mx-auto">
+            <h1 className="text-4xl lg:text-5xl font-black text-[#0a192f] mb-6">{T.h1}</h1>
+            <p className="text-lg text-gray-600 max-w-2xl leading-relaxed">{T.p}</p>
+          </div>
+        </section>
+        <InvestmentsList />
+        <InvestmentsStats />
+      </main>
+      <SiteFooter />
+    </div>
   );
 }
