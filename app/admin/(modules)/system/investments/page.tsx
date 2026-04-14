@@ -197,7 +197,7 @@ export default function InvestmentsAdminPage() {
                   className="flex-1 px-3 py-1.5 border border-gray-200 rounded-lg text-sm outline-none focus:border-[#137fec] bg-white">
                   <option value="fundraising">Fundraising</option>
                   <option value="active">Active (enables profit distribution)</option>
-                  <option value="upcoming">Upcoming</option>
+                  
                   <option value="coming_soon">Coming Soon</option>
                   <option value="closed">Closed</option>
                 </select>
@@ -313,7 +313,7 @@ export default function InvestmentsAdminPage() {
                 <select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })} className={inputClass}>
                   <option value="fundraising">Fundraising</option>
                   <option value="active">Active</option>
-                  <option value="upcoming">Upcoming</option>
+                  
                   <option value="coming_soon">Coming Soon</option>
                   <option value="closed">Closed</option>
                 </select>
