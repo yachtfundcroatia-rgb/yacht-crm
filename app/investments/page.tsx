@@ -109,9 +109,10 @@ function InvestmentCard({ inv, onInvest }: { inv: Investment; onInvest: (inv: In
 
   return (
     <>
-      <div className={`bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 flex flex-col ${!isActive ? "opacity-60 grayscale" : ""}`}>
+      {/* Card — no grayscale for coming_soon, only for truly inactive */}
+      <div className={`bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 flex flex-col ${!isActive && !isComingSoon ? "opacity-60 grayscale" : isComingSoon ? "opacity-85" : ""}`}>
         <div className="relative h-52 bg-cover bg-center bg-gray-100" style={{ backgroundImage: mainImage ? `url(${mainImage})` : undefined }}>
-          <div className={`absolute top-4 left-4 px-3 py-1 text-white text-xs font-black rounded-full uppercase tracking-wide ${isActive ? "bg-green-500" : "bg-gray-500"}`}>
+          <div className={`absolute top-4 left-4 px-3 py-1 text-white text-xs font-black rounded-full uppercase tracking-wide ${isActive ? "bg-green-500" : isComingSoon ? "bg-blue-500" : "bg-gray-500"}`}>
             {isActive ? T.badge_active : T.badge_coming}
           </div>
           {inv.images?.length > 1 && (
@@ -156,6 +157,7 @@ function InvestmentCard({ inv, onInvest }: { inv: Investment; onInvest: (inv: In
         </div>
       </div>
 
+      {/* Modal */}
       {modalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto relative">
@@ -183,15 +185,17 @@ function InvestmentCard({ inv, onInvest }: { inv: Investment; onInvest: (inv: In
                 {inv.vessel_cabins && <div className="bg-[#f6f7f8] rounded-xl p-4 text-center"><div className="text-xs text-gray-400 uppercase tracking-wide mb-1">{T.modal_cabins}</div><div className="font-black text-[#0a192f]">{inv.vessel_cabins}</div></div>}
                 <div className="bg-[#f6f7f8] rounded-xl p-4 text-center"><div className="text-xs text-gray-400 uppercase tracking-wide mb-1">{T.modal_min}</div><div className="font-black text-[#0a192f]">{inv.currency} {Number(inv.min_investment).toLocaleString()}</div></div>
               </div>
-              {inv.total_slots > 0 && (
+              {isActive && inv.total_slots > 0 && (
                 <div className="mb-6">
                   <div className="flex justify-between text-sm mb-2"><span className="font-semibold text-gray-700">{T.modal_slots}</span><span className="font-black text-[#137fec]">{inv.available_slots} / {inv.total_slots} {T.label_remaining}</span></div>
                   <div className="h-2 bg-gray-100 rounded-full"><div className="h-2 bg-[#137fec] rounded-full" style={{ width: `${slotsPercent}%` }} /></div>
                 </div>
               )}
               <div className="flex gap-3">
-                <button onClick={() => { setModalOpen(false); onInvest(inv); }} className="flex-1 py-4 bg-[#137fec] text-white rounded-xl font-bold hover:bg-[#0f6fd4] transition-colors">{T.btn_invest}</button>
-                <button onClick={() => setModalOpen(false)} className="px-6 py-4 border-2 border-gray-200 text-gray-600 rounded-xl font-bold hover:bg-gray-50 transition-colors">{T.modal_close}</button>
+                {isActive && (
+                  <button onClick={() => { setModalOpen(false); onInvest(inv); }} className="flex-1 py-4 bg-[#137fec] text-white rounded-xl font-bold hover:bg-[#0f6fd4] transition-colors">{T.btn_invest}</button>
+                )}
+                <button onClick={() => setModalOpen(false)} className={`py-4 border-2 border-gray-200 text-gray-600 rounded-xl font-bold hover:bg-gray-50 transition-colors ${isActive ? "px-6" : "flex-1"}`}>{T.modal_close}</button>
               </div>
             </div>
           </div>
@@ -219,7 +223,7 @@ function InvestmentsList() {
 
   const filtered = investments.filter((inv) => {
     if (filter === "active") return inv.status === "fundraising" || inv.status === "active";
-    if (filter === "upcoming") return inv.status === "upcoming" || inv.status === "coming_soon";
+    if (filter === "upcoming") return inv.status === "coming_soon" || inv.status === "draft";
     return true;
   });
 
