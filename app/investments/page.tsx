@@ -103,6 +103,8 @@ function InvestmentCard({ inv, onInvest }: { inv: Investment; onInvest: (inv: In
   const T = t[lang].inv;
   const [modalOpen, setModalOpen] = useState(false);
   const isActive = inv.status === "fundraising" || inv.status === "active";
+  const isComingSoon = inv.status === "coming_soon" || inv.status === "draft";
+  const isComingSoon = inv.status === "coming_soon" || inv.status === "draft";
   const slotsPercent = inv.total_slots ? Math.round(((inv.total_slots - inv.available_slots) / inv.total_slots) * 100) : 0;
   const mainImage = inv.images?.[0] || inv.image_url;
 
@@ -145,6 +147,8 @@ function InvestmentCard({ inv, onInvest }: { inv: Investment; onInvest: (inv: In
               <button onClick={() => setModalOpen(true)} className="flex-1 py-3 border-2 border-[#137fec] text-[#137fec] rounded-xl font-bold text-sm hover:bg-blue-50 transition-colors">{T.btn_details}</button>
               <button onClick={() => onInvest(inv)} className="flex-1 py-3 bg-[#137fec] text-white rounded-xl font-bold text-sm hover:bg-[#0f6fd4] transition-colors">{T.btn_invest}</button>
             </div>
+          ) : isComingSoon ? (
+            <button onClick={() => setModalOpen(true)} className="w-full py-3 border-2 border-gray-300 text-gray-600 rounded-xl font-bold text-sm hover:bg-gray-50 transition-colors">{T.btn_details}</button>
           ) : (
             <div className="w-full py-3 bg-gray-100 text-gray-400 rounded-xl font-bold text-center text-sm">
               {T.modal_min}: {inv.currency} {Number(inv.min_investment).toLocaleString()} / Slot
