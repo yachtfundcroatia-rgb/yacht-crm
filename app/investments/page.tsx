@@ -104,7 +104,6 @@ function InvestmentCard({ inv, onInvest }: { inv: Investment; onInvest: (inv: In
   const [modalOpen, setModalOpen] = useState(false);
   const isActive = inv.status === "fundraising" || inv.status === "active";
   const isComingSoon = inv.status === "coming_soon" || inv.status === "draft";
-  const isComingSoon = inv.status === "coming_soon" || inv.status === "draft";
   const slotsPercent = inv.total_slots ? Math.round(((inv.total_slots - inv.available_slots) / inv.total_slots) * 100) : 0;
   const mainImage = inv.images?.[0] || inv.image_url;
 
