@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import NextImage from "next/image";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 import InvestModal from "@/components/InvestModal";
@@ -36,12 +37,16 @@ function ImageGallery({ images, mainImage }: { images: string[]; mainImage: stri
     return <div className="h-72 bg-gray-100 rounded-xl flex items-center justify-center text-gray-400">No images</div>;
   }
   if (allImages.length === 1) {
-    return <div className="h-72 bg-cover bg-center rounded-xl" style={{ backgroundImage: `url(${allImages[0]})` }} />;
+    return (
+      <div className="relative h-72 rounded-xl overflow-hidden">
+        <NextImage src={allImages[0]} alt="Investment" fill className="object-cover" priority />
+      </div>
+    );
   }
 
   return (
     <div className="relative h-72 rounded-xl overflow-hidden">
-      <div className="absolute inset-0 bg-cover bg-center transition-all duration-300" style={{ backgroundImage: `url(${allImages[current]})` }} />
+      <NextImage src={allImages[current]} alt="Investment" fill className="object-cover transition-all duration-300" priority />
       <button onClick={() => setCurrent(c => (c - 1 + allImages.length) % allImages.length)}
         className="absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 bg-white/80 rounded-full flex items-center justify-center hover:bg-white transition-colors shadow-md z-10">
         <ChevronLeft className="w-4 h-4 text-[#0a192f]" />
@@ -98,7 +103,7 @@ function StatCard({ target, suffix, label }: { target: number; suffix: string; l
   );
 }
 
-function InvestmentCard({ inv, onInvest }: { inv: Investment; onInvest: (inv: Investment) => void }) {
+function InvestmentCard({ inv, index, onInvest }: { inv: Investment; index: number; onInvest: (inv: Investment) => void }) {
   const { lang } = useLang();
   const T = t[lang].inv;
   const [modalOpen, setModalOpen] = useState(false);
@@ -109,18 +114,31 @@ function InvestmentCard({ inv, onInvest }: { inv: Investment; onInvest: (inv: In
 
   return (
     <>
-      {/* Card — no grayscale for coming_soon, only for truly inactive */}
       <div className={`bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 flex flex-col ${!isActive && !isComingSoon ? "opacity-60 grayscale" : isComingSoon ? "opacity-85" : ""}`}>
-        <div className="relative h-52 bg-cover bg-center bg-gray-100" style={{ backgroundImage: mainImage ? `url(${mainImage})` : undefined }}>
-          <div className={`absolute top-4 left-4 px-3 py-1 text-white text-xs font-black rounded-full uppercase tracking-wide ${isActive ? "bg-green-500" : isComingSoon ? "bg-blue-500" : "bg-gray-500"}`}>
+        {/* Card image — use Next/Image for performance */}
+        <div className="relative h-52 bg-gray-100">
+          {mainImage ? (
+            <NextImage
+              src={mainImage}
+              alt={inv.name}
+              fill
+              className="object-cover"
+              priority={index < 3}
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            />
+          ) : (
+            <div className="w-full h-full bg-gray-200" />
+          )}
+          <div className={`absolute top-4 left-4 px-3 py-1 text-white text-xs font-black rounded-full uppercase tracking-wide z-10 ${isActive ? "bg-green-500" : isComingSoon ? "bg-blue-500" : "bg-gray-500"}`}>
             {isActive ? T.badge_active : T.badge_coming}
           </div>
           {inv.images?.length > 1 && (
-            <div className="absolute bottom-3 right-3 px-2 py-1 bg-black/50 text-white text-xs font-bold rounded-full">
+            <div className="absolute bottom-3 right-3 px-2 py-1 bg-black/50 text-white text-xs font-bold rounded-full z-10">
               +{inv.images.length - 1} photos
             </div>
           )}
         </div>
+
         <div className="p-6 flex flex-col flex-1">
           <h3 className="text-lg font-black text-[#0a192f] mb-1">{inv.name}</h3>
           <p className="text-sm text-gray-500 mb-4">{inv.location}</p>
@@ -157,7 +175,6 @@ function InvestmentCard({ inv, onInvest }: { inv: Investment; onInvest: (inv: In
         </div>
       </div>
 
-      {/* Modal */}
       {modalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto relative">
@@ -241,7 +258,9 @@ function InvestmentsList() {
         {loading && <div className="text-center py-20 text-gray-400">Loading...</div>}
         {!loading && filtered.length === 0 && <div className="text-center py-20 text-gray-400">No investments found.</div>}
         <div className="grid md:grid-cols-3 gap-8">
-          {filtered.map((inv) => <InvestmentCard key={inv.id} inv={inv} onInvest={(i) => { setSelectedInvestment(i); setInvestOpen(true); }} />)}
+          {filtered.map((inv, i) => (
+            <InvestmentCard key={inv.id} inv={inv} index={i} onInvest={(inv) => { setSelectedInvestment(inv); setInvestOpen(true); }} />
+          ))}
         </div>
       </div>
       <InvestModal open={investOpen} onClose={() => { setInvestOpen(false); setSelectedInvestment(null); }} defaultAmount={selectedInvestment?.min_investment?.toString() || ""} />
