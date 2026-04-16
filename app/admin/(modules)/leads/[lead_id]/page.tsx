@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useAdmin } from "@/app/context/AdminContext";
-import { ArrowLeft, Mail, Phone, CheckCircle, XCircle } from "lucide-react";
+import { ArrowLeft, Mail, Phone, CheckCircle } from "lucide-react";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL!;
 
@@ -32,6 +32,12 @@ interface Reservation {
   investment_ref: string;
 }
 
+interface Investment {
+  id: string;
+  name: string;
+  status: string;
+}
+
 const STATUS_COLORS: Record<string, string> = {
   new: "bg-blue-50 text-blue-700 border border-blue-200",
   contacted: "bg-yellow-50 text-yellow-700 border border-yellow-200",
@@ -56,6 +62,8 @@ export default function LeadDetailPage() {
   const [lead, setLead] = useState<Lead | null>(null);
   const [reservation, setReservation] = useState<Reservation | null>(null);
   const [allowedTransitions, setAllowedTransitions] = useState<string[]>([]);
+  const [investments, setInvestments] = useState<Investment[]>([]);
+  const [selectedInvestment, setSelectedInvestment] = useState("");
   const [investmentAmount, setInvestmentAmount] = useState("20000");
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
@@ -80,7 +88,6 @@ export default function LeadDetailPage() {
     setLead(data.lead);
     setAllowedTransitions(data.allowedTransitions || []);
     setReservation(data.reservation || null);
-    // Pre-fill capital amount from reservation remaining
     if (data.reservation?.remaining_amount) {
       setCapitalAmount(String(data.reservation.remaining_amount));
     }
@@ -96,9 +103,26 @@ export default function LeadDetailPage() {
     if (Array.isArray(data)) setAdmins(data);
   }
 
+  async function fetchInvestments() {
+    if (!token) return;
+    const res = await fetch(`${API_URL}/api/admin/investments`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    const data = await res.json();
+    if (Array.isArray(data)) {
+      // Only show fundraising investments for reservation
+      const active = data.filter((inv: Investment) => inv.status === "fundraising");
+      setInvestments(active);
+      if (active.length === 1) setSelectedInvestment(active[0].id);
+    }
+  }
+
   useEffect(() => {
     fetchLead();
-    if (admin?.role === "superadmin") fetchAdmins();
+    if (admin?.role === "superadmin") {
+      fetchAdmins();
+      fetchInvestments();
+    }
   }, [leadId, token]);
 
   async function handleTransition(status: string) {
@@ -129,6 +153,10 @@ export default function LeadDetailPage() {
   }
 
   async function createReservation() {
+    if (!selectedInvestment) {
+      setMessage({ text: "Please select an investment", ok: false });
+      return;
+    }
     try {
       setCreating(true);
       const amount = Number(investmentAmount);
@@ -137,7 +165,7 @@ export default function LeadDetailPage() {
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({
           lead_id: leadId,
-          investment_ref: "TEST_YACHT_01",
+          investment_ref: selectedInvestment,
           deposit_amount: amount * 0.1,
           remaining_amount: amount * 0.9,
           slots_reserved: amount / 10000,
@@ -301,7 +329,7 @@ export default function LeadDetailPage() {
           )}
         </div>
 
-        {/* Assign */}
+        {/* Assign — superadmin only */}
         {admin?.role === "superadmin" && (
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
             <h2 className="font-black text-[#0a192f] mb-4">Assign to Admin</h2>
@@ -319,53 +347,71 @@ export default function LeadDetailPage() {
         )}
 
         {/* Reservation — superadmin only */}
-        {admin?.role === "superadmin" && <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-          <h2 className="font-black text-[#0a192f] mb-4">Reservation</h2>
-          {!reservation && (
-            <div>
-              <label className={labelClass}>Investment Amount (€)</label>
-              <input type="number" value={investmentAmount} onChange={(e) => setInvestmentAmount(e.target.value)} className={`${inputClass} mb-3`} />
-              <button onClick={createReservation} disabled={creating} className="px-4 py-2 bg-[#137fec] text-white rounded-xl text-sm font-bold hover:bg-[#0f6fd4] transition-colors disabled:opacity-40">
-                {creating ? "Creating..." : "Create Reservation"}
-              </button>
-            </div>
-          )}
-          {reservation && (
-            <div className="space-y-3">
-              <div className="grid grid-cols-2 gap-3">
-                <div className="bg-[#f8faff] rounded-xl p-3">
-                  <div className="text-xs text-gray-400 uppercase tracking-wide mb-1">Deposit (10%)</div>
-                  <div className="font-black text-[#0a192f]">€{Number(reservation.deposit_amount).toLocaleString()}</div>
-                  <div className={`text-xs font-bold mt-1 ${reservation.deposit_paid_at ? "text-green-600" : "text-orange-500"}`}>
-                    {reservation.deposit_paid_at ? "✓ PAID" : "PENDING"}
-                  </div>
-                </div>
-                <div className="bg-[#f8faff] rounded-xl p-3">
-                  <div className="text-xs text-gray-400 uppercase tracking-wide mb-1">Remaining (90%)</div>
-                  <div className="font-black text-[#0a192f]">€{Number(reservation.remaining_amount).toLocaleString()}</div>
-                  <div className={`text-xs font-bold mt-1 ${reservation.remaining_paid_at ? "text-green-600" : "text-orange-500"}`}>
-                    {reservation.remaining_paid_at ? "✓ PAID" : "PENDING"}
-                  </div>
-                </div>
-              </div>
-              <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-bold ${STATUS_COLORS[reservation.status] || "bg-gray-100 text-gray-600"}`}>
-                {reservation.status}
-              </span>
-              {!reservation.deposit_paid_at && (
-                <button onClick={confirmDeposit} disabled={processing} className="w-full py-2.5 bg-green-600 text-white rounded-xl text-sm font-bold hover:bg-green-700 transition-colors disabled:opacity-40">
-                  {processing ? "Processing..." : "Confirm Deposit Paid"}
-                </button>
-              )}
-              {reservation.deposit_paid_at && !isConverted && (
-                <button onClick={convertToInvestor} disabled={processing} className="w-full py-2.5 bg-[#0a192f] text-white rounded-xl text-sm font-bold hover:bg-[#0f2848] transition-colors disabled:opacity-40">
-                  {processing ? "Processing..." : "Convert to Investor"}
-                </button>
-              )}
-            </div>
-          )}
-        </div>}
+        {admin?.role === "superadmin" && (
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+            <h2 className="font-black text-[#0a192f] mb-4">Reservation</h2>
 
-        {/* Confirm Capital Payment — superadmin only */}
+            {!reservation && (
+              <div className="space-y-3">
+                <div>
+                  <label className={labelClass}>Investment</label>
+                  <select value={selectedInvestment} onChange={(e) => setSelectedInvestment(e.target.value)} className={inputClass}>
+                    <option value="">— select investment —</option>
+                    {investments.map((inv) => (
+                      <option key={inv.id} value={inv.id}>{inv.name}</option>
+                    ))}
+                  </select>
+                  {investments.length === 0 && <p className="text-xs text-orange-500 mt-1">No fundraising investments available</p>}
+                </div>
+                <div>
+                  <label className={labelClass}>Investment Amount (€)</label>
+                  <input type="number" value={investmentAmount} onChange={(e) => setInvestmentAmount(e.target.value)} className={inputClass} />
+                </div>
+                <button onClick={createReservation} disabled={creating || !selectedInvestment}
+                  className="w-full px-4 py-2.5 bg-[#137fec] text-white rounded-xl text-sm font-bold hover:bg-[#0f6fd4] transition-colors disabled:opacity-40">
+                  {creating ? "Creating..." : "Create Reservation"}
+                </button>
+              </div>
+            )}
+
+            {reservation && (
+              <div className="space-y-3">
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="bg-[#f8faff] rounded-xl p-3">
+                    <div className="text-xs text-gray-400 uppercase tracking-wide mb-1">Deposit (10%)</div>
+                    <div className="font-black text-[#0a192f]">€{Number(reservation.deposit_amount).toLocaleString()}</div>
+                    <div className={`text-xs font-bold mt-1 ${reservation.deposit_paid_at ? "text-green-600" : "text-orange-500"}`}>
+                      {reservation.deposit_paid_at ? "✓ PAID" : "PENDING"}
+                    </div>
+                  </div>
+                  <div className="bg-[#f8faff] rounded-xl p-3">
+                    <div className="text-xs text-gray-400 uppercase tracking-wide mb-1">Remaining (90%)</div>
+                    <div className="font-black text-[#0a192f]">€{Number(reservation.remaining_amount).toLocaleString()}</div>
+                    <div className={`text-xs font-bold mt-1 ${reservation.remaining_paid_at ? "text-green-600" : "text-orange-500"}`}>
+                      {reservation.remaining_paid_at ? "✓ PAID" : "PENDING"}
+                    </div>
+                  </div>
+                </div>
+                <div className="text-xs text-gray-400">Investment: <span className="font-semibold text-gray-600">{reservation.investment_ref}</span></div>
+                <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-bold ${STATUS_COLORS[reservation.status] || "bg-gray-100 text-gray-600"}`}>
+                  {reservation.status}
+                </span>
+                {!reservation.deposit_paid_at && (
+                  <button onClick={confirmDeposit} disabled={processing} className="w-full py-2.5 bg-green-600 text-white rounded-xl text-sm font-bold hover:bg-green-700 transition-colors disabled:opacity-40">
+                    {processing ? "Processing..." : "Confirm Deposit Paid"}
+                  </button>
+                )}
+                {reservation.deposit_paid_at && !isConverted && (
+                  <button onClick={convertToInvestor} disabled={processing} className="w-full py-2.5 bg-[#0a192f] text-white rounded-xl text-sm font-bold hover:bg-[#0f2848] transition-colors disabled:opacity-40">
+                    {processing ? "Processing..." : "Convert to Investor"}
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Confirm Capital Payment — superadmin only, shown after conversion */}
         {admin?.role === "superadmin" && hasCapitalPending && (
           <div className="bg-white rounded-2xl border border-green-100 shadow-sm p-6 lg:col-span-2">
             <div className="flex items-center gap-2 mb-2">
@@ -373,7 +419,7 @@ export default function LeadDetailPage() {
               <h2 className="font-black text-[#0a192f]">Confirm Full Capital Payment</h2>
             </div>
             <p className="text-xs text-gray-500 mb-4">
-              Investor has been created. Confirm when the remaining capital has been received. 
+              Investor has been created. Confirm when the remaining capital has been received.
               This will book <strong>€{(Number(reservation.remaining_amount) + Number(reservation.deposit_amount)).toLocaleString()}</strong> (deposit + remaining) to the financial ledger.
             </p>
             <div className="flex gap-3 items-end">
@@ -387,7 +433,7 @@ export default function LeadDetailPage() {
               </button>
             </div>
             <p className="text-xs text-gray-400 mt-2">
-              Ledger will record: €{capitalAmount ? (Number(capitalAmount) + Number(reservation.deposit_amount)).toLocaleString() : "—"} 
+              Ledger will record: €{capitalAmount ? (Number(capitalAmount) + Number(reservation.deposit_amount)).toLocaleString() : "—"}
               (€{capitalAmount || "0"} remaining + €{Number(reservation.deposit_amount).toLocaleString()} deposit)
             </p>
           </div>
