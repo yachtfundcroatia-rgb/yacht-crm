@@ -119,8 +119,8 @@ export default function InvestorLogin() {
             <div className="mt-6 pt-6 border-t border-gray-100 text-center">
               <p className="text-xs text-gray-400">
                 Having trouble? Contact{" "}
-                <a href="mailto:invest@yachtfund.com" className="text-[#137fec] font-semibold hover:underline">
-                  invest@yachtfund.com
+                <a href="mailto:hi@yacht.fund" className="text-[#137fec] font-semibold hover:underline">
+                  hi@yacht.fund
                 </a>
               </p>
             </div>
