@@ -15,6 +15,7 @@ interface Investment {
   images: string[];
   target_roi: number;
   min_investment: number;
+  total_capital: number;
   total_slots: number;
   available_slots: number;
   vessel_year: number;
@@ -27,7 +28,8 @@ interface Investment {
 
 const EMPTY_FORM = {
   id: "", name: "", description: "", location: "", image_url: "",
-  target_roi: "", min_investment: "10000", total_slots: "", available_slots: "",
+  target_roi: "", min_investment: "10000", total_capital: "0",
+  total_slots: "", available_slots: "",
   vessel_year: "", vessel_length: "", vessel_cabins: "",
   status: "fundraising", currency: "EUR", display_order: "0",
 };
@@ -38,7 +40,6 @@ const labelClass = "block text-xs font-bold text-gray-500 uppercase tracking-wid
 const STATUS_STYLES: Record<string, string> = {
   fundraising: "bg-green-50 text-green-700 border border-green-200",
   active: "bg-blue-50 text-blue-700 border border-blue-200",
-  upcoming: "bg-yellow-50 text-yellow-700 border border-yellow-200",
   coming_soon: "bg-gray-100 text-gray-600 border border-gray-200",
   closed: "bg-red-50 text-red-600 border border-red-200",
 };
@@ -85,13 +86,22 @@ export default function InvestmentsAdminPage() {
 
   function openEdit(inv: Investment) {
     setForm({
-      id: inv.id, name: inv.name || "", description: inv.description || "",
-      location: inv.location || "", image_url: inv.image_url || "",
-      target_roi: inv.target_roi?.toString() || "", min_investment: inv.min_investment?.toString() || "10000",
-      total_slots: inv.total_slots?.toString() || "", available_slots: inv.available_slots?.toString() || "",
-      vessel_year: inv.vessel_year?.toString() || "", vessel_length: inv.vessel_length || "",
-      vessel_cabins: inv.vessel_cabins?.toString() || "", status: inv.status || "fundraising",
-      currency: inv.currency || "EUR", display_order: inv.display_order?.toString() || "0",
+      id: inv.id,
+      name: inv.name || "",
+      description: inv.description || "",
+      location: inv.location || "",
+      image_url: inv.image_url || "",
+      target_roi: inv.target_roi?.toString() || "",
+      min_investment: inv.min_investment?.toString() || "10000",
+      total_capital: inv.total_capital?.toString() || "0",
+      total_slots: inv.total_slots?.toString() || "",
+      available_slots: inv.available_slots?.toString() || "",
+      vessel_year: inv.vessel_year?.toString() || "",
+      vessel_length: inv.vessel_length || "",
+      vessel_cabins: inv.vessel_cabins?.toString() || "",
+      status: inv.status || "fundraising",
+      currency: inv.currency || "EUR",
+      display_order: inv.display_order?.toString() || "0",
     });
     const imgs = [...(inv.images || [])];
     while (imgs.length < 6) imgs.push("");
@@ -107,9 +117,13 @@ export default function InvestmentsAdminPage() {
     try {
       const payload = {
         ...form,
-        target_roi: Number(form.target_roi), min_investment: Number(form.min_investment),
-        total_slots: Number(form.total_slots), available_slots: Number(form.available_slots),
-        vessel_year: Number(form.vessel_year), vessel_cabins: Number(form.vessel_cabins),
+        target_roi: Number(form.target_roi),
+        min_investment: Number(form.min_investment),
+        total_capital: Number(form.total_capital),
+        total_slots: Number(form.total_slots),
+        available_slots: Number(form.available_slots),
+        vessel_year: Number(form.vessel_year),
+        vessel_cabins: Number(form.vessel_cabins),
         display_order: Number(form.display_order),
         images: images.filter(url => url.trim()),
       };
@@ -121,7 +135,11 @@ export default function InvestmentsAdminPage() {
       });
       const data = await res.json();
       if (!res.ok) setMessage({ text: data.error, ok: false });
-      else { setMessage({ text: editingId ? "Investment updated" : "Investment created", ok: true }); setShowForm(false); fetchInvestments(); }
+      else {
+        setMessage({ text: editingId ? "Investment updated" : "Investment created", ok: true });
+        setShowForm(false);
+        fetchInvestments();
+      }
     } catch { setMessage({ text: "Server error", ok: false }); }
     finally { setSaving(false); }
   }
@@ -183,7 +201,7 @@ export default function InvestmentsAdminPage() {
                     )}
                   </div>
                   <div className="text-xs text-gray-400">
-                    {inv.location} · ROI: {inv.target_roi}% · Slots: {inv.available_slots}/{inv.total_slots} · Min: {inv.currency} {Number(inv.min_investment).toLocaleString()}
+                    {inv.location} · ROI: {inv.target_roi}% · Total Capital: {inv.currency} {Number(inv.total_capital).toLocaleString()} · Min: {inv.currency} {Number(inv.min_investment).toLocaleString()}
                   </div>
                 </div>
                 <button onClick={() => openEdit(inv)} className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 border border-gray-200 text-gray-600 rounded-lg text-xs font-bold hover:bg-gray-100 transition-colors flex-shrink-0">
@@ -197,7 +215,6 @@ export default function InvestmentsAdminPage() {
                   className="flex-1 px-3 py-1.5 border border-gray-200 rounded-lg text-sm outline-none focus:border-[#137fec] bg-white">
                   <option value="fundraising">Fundraising</option>
                   <option value="active">Active (enables profit distribution)</option>
-                  
                   <option value="coming_soon">Coming Soon</option>
                   <option value="closed">Closed</option>
                 </select>
@@ -282,12 +299,18 @@ export default function InvestmentsAdminPage() {
                 <input type="number" value={form.min_investment} onChange={(e) => setForm({ ...form, min_investment: e.target.value })} className={inputClass} />
               </div>
               <div>
+                <label className={labelClass}>Total Capital ({form.currency}) *</label>
+                <input type="number" value={form.total_capital} onChange={(e) => setForm({ ...form, total_capital: e.target.value })} className={inputClass} placeholder="e.g. 500000" />
+                <p className="text-xs text-gray-400 mt-1">Maximum capital to be raised for this investment</p>
+              </div>
+              <div>
                 <label className={labelClass}>Total Slots</label>
                 <input type="number" value={form.total_slots} onChange={(e) => setForm({ ...form, total_slots: e.target.value })} className={inputClass} />
               </div>
               <div>
                 <label className={labelClass}>Available Slots</label>
                 <input type="number" value={form.available_slots} onChange={(e) => setForm({ ...form, available_slots: e.target.value })} className={inputClass} />
+                <p className="text-xs text-gray-400 mt-1">Display only — no financial impact</p>
               </div>
               <div>
                 <label className={labelClass}>Vessel Year</label>
@@ -313,7 +336,6 @@ export default function InvestmentsAdminPage() {
                 <select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })} className={inputClass}>
                   <option value="fundraising">Fundraising</option>
                   <option value="active">Active</option>
-                  
                   <option value="coming_soon">Coming Soon</option>
                   <option value="closed">Closed</option>
                 </select>
