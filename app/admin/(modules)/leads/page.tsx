@@ -18,6 +18,18 @@ const STATUS_COLORS: Record<string, string> = {
   lost: "bg-red-50 text-red-600 border border-red-200",
 };
 
+const SOURCE_COLORS: Record<string, string> = {
+  website: "bg-gray-100 text-gray-600",
+  google_ads: "bg-blue-100 text-blue-700",
+  meta_ads: "bg-indigo-100 text-indigo-700",
+};
+
+const SOURCE_LABELS: Record<string, string> = {
+  website: "Website",
+  google_ads: "Google Ads",
+  meta_ads: "Meta Ads",
+};
+
 const inputClass = "w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#137fec] focus:ring-2 focus:ring-[#137fec]/10 transition-all bg-white";
 const labelClass = "block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5";
 
@@ -40,7 +52,8 @@ export default function LeadsPage() {
   const router = useRouter();
   const { token } = useAdmin();
   const [page, setPage] = useState(1);
-  const { leads, loading, error, pagination, fetchLeads } = useLeads({ page });
+  const [sourceFilter, setSourceFilter] = useState("");
+  const { leads, loading, error, pagination, fetchLeads } = useLeads({ page, source: sourceFilter });
 
   // Add lead form
   const [showForm, setShowForm] = useState(false);
@@ -175,6 +188,23 @@ export default function LeadsPage() {
         </div>
       </div>
 
+      {/* Source filter */}
+      <div className="flex items-center gap-2 mb-5">
+        {["", "website", "google_ads", "meta_ads"].map((src) => (
+          <button
+            key={src}
+            onClick={() => { setSourceFilter(src); setPage(1); }}
+            className={`px-4 py-1.5 rounded-full text-xs font-bold border transition-colors ${
+              sourceFilter === src
+                ? "bg-[#0a192f] text-white border-[#0a192f]"
+                : "bg-white text-gray-500 border-gray-200 hover:border-gray-300"
+            }`}
+          >
+            {src === "" ? "All sources" : SOURCE_LABELS[src]}
+          </button>
+        ))}
+      </div>
+
       {/* Add Lead Form */}
       {showForm && (
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 mb-6">
@@ -255,36 +285,31 @@ export default function LeadsPage() {
             <thead>
               <tr className="border-b border-gray-100 bg-gray-50">
                 <th className="px-4 py-4 w-10">
-                  <input
-                    type="checkbox"
-                    checked={allSelected}
-                    onChange={toggleSelectAll}
-                    className="w-4 h-4 rounded border-gray-300 text-[#137fec] focus:ring-[#137fec] cursor-pointer"
-                  />
+                  <input type="checkbox" checked={allSelected} onChange={toggleSelectAll}
+                    className="w-4 h-4 rounded border-gray-300 text-[#137fec] focus:ring-[#137fec] cursor-pointer" />
                 </th>
                 <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">Name</th>
                 <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">Email</th>
+                <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">Source</th>
                 <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">Status</th>
                 <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">Created</th>
               </tr>
             </thead>
             <tbody>
               {leads.map((lead: any) => (
-                <tr
-                  key={lead.id}
-                  onClick={() => router.push(`/admin/leads/${lead.id}`)}
-                  className={`border-b border-gray-50 hover:bg-[#f8faff] transition-colors cursor-pointer ${selectedIds.has(lead.id) ? "bg-blue-50/40" : ""}`}
-                >
+                <tr key={lead.id} onClick={() => router.push(`/admin/leads/${lead.id}`)}
+                  className={`border-b border-gray-50 hover:bg-[#f8faff] transition-colors cursor-pointer ${selectedIds.has(lead.id) ? "bg-blue-50/40" : ""}`}>
                   <td className="px-4 py-4" onClick={(e) => toggleSelect(lead.id, e)}>
-                    <input
-                      type="checkbox"
-                      checked={selectedIds.has(lead.id)}
-                      onChange={() => {}}
-                      className="w-4 h-4 rounded border-gray-300 text-[#137fec] focus:ring-[#137fec] cursor-pointer"
-                    />
+                    <input type="checkbox" checked={selectedIds.has(lead.id)} onChange={() => {}}
+                      className="w-4 h-4 rounded border-gray-300 text-[#137fec] focus:ring-[#137fec] cursor-pointer" />
                   </td>
                   <td className="px-6 py-4 text-sm font-semibold text-[#0a192f]">{lead.full_name}</td>
                   <td className="px-6 py-4 text-sm text-gray-500">{lead.email}</td>
+                  <td className="px-6 py-4">
+                    <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold ${SOURCE_COLORS[lead.source] || "bg-gray-100 text-gray-500"}`}>
+                      {SOURCE_LABELS[lead.source] || lead.source || "—"}
+                    </span>
+                  </td>
                   <td className="px-6 py-4">
                     <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold ${STATUS_COLORS[lead.status] || "bg-gray-100 text-gray-600"}`}>
                       {lead.status}
@@ -331,54 +356,34 @@ export default function LeadsPage() {
                   ? `To all ${pagination.total} leads`
                   : `To ${selectedIds.size} selected lead${selectedIds.size !== 1 ? "s" : ""}`}
               </p>
-
               <form onSubmit={handleSendEmail} className="space-y-4">
                 <div>
                   <label className={labelClass}>Subject</label>
-                  <input
-                    type="text"
-                    value={emailForm.subject}
-                    onChange={(e) => setEmailForm({ ...emailForm, subject: e.target.value })}
-                    className={inputClass}
-                    placeholder="e.g. New investment opportunity at Yacht Fund"
-                    required
-                  />
+                  <input type="text" value={emailForm.subject} onChange={(e) => setEmailForm({ ...emailForm, subject: e.target.value })}
+                    className={inputClass} placeholder="e.g. New investment opportunity at Yacht Fund" required />
                 </div>
                 <div>
                   <label className={labelClass}>Message</label>
-                  <textarea
-                    value={emailForm.html}
-                    onChange={(e) => setEmailForm({ ...emailForm, html: e.target.value })}
-                    rows={8}
-                    placeholder={"Dear {{name}},\n\nYour message here...\n\nBest regards,\nYacht Fund Team"}
-                    className={`${inputClass} resize-none font-mono text-xs`}
-                    required
-                  />
+                  <textarea value={emailForm.html} onChange={(e) => setEmailForm({ ...emailForm, html: e.target.value })}
+                    rows={8} placeholder={"Dear {{name}},\n\nYour message here...\n\nBest regards,\nYacht Fund Team"}
+                    className={`${inputClass} resize-none font-mono text-xs`} required />
                   <p className="text-xs text-gray-400 mt-1.5">
                     Tip: <code className="bg-gray-100 px-1 rounded">{"{{name}}"}</code> zostanie zastąpione imieniem i nazwiskiem odbiorcy z bazy. Np. wpisz <em>Dear {"{{name}}"},</em> a każdy otrzyma <em>Dear Jack Smith,</em>
                   </p>
                 </div>
-
                 {emailResult && (
                   <div className={`px-4 py-3 rounded-xl text-sm font-semibold ${emailResult.ok ? "bg-green-50 text-green-700 border border-green-100" : "bg-red-50 text-red-600 border border-red-100"}`}>
                     {emailResult.text}
                   </div>
                 )}
-
                 <div className="flex gap-3 pt-2">
-                  <button
-                    type="submit"
-                    disabled={sending}
-                    className="flex items-center gap-2 px-6 py-2.5 bg-[#137fec] text-white rounded-xl font-bold text-sm hover:bg-[#0f6fd4] transition-colors disabled:opacity-50"
-                  >
+                  <button type="submit" disabled={sending}
+                    className="flex items-center gap-2 px-6 py-2.5 bg-[#137fec] text-white rounded-xl font-bold text-sm hover:bg-[#0f6fd4] transition-colors disabled:opacity-50">
                     <Send className="w-4 h-4" />
                     {sending ? "Sending..." : "Send"}
                   </button>
-                  <button
-                    type="button"
-                    onClick={() => setShowEmailModal(false)}
-                    className="px-6 py-2.5 bg-white border border-gray-200 text-gray-600 rounded-xl font-bold text-sm hover:bg-gray-50 transition-colors"
-                  >
+                  <button type="button" onClick={() => setShowEmailModal(false)}
+                    className="px-6 py-2.5 bg-white border border-gray-200 text-gray-600 rounded-xl font-bold text-sm hover:bg-gray-50 transition-colors">
                     Cancel
                   </button>
                 </div>

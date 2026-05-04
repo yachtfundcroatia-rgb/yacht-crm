@@ -17,6 +17,7 @@ interface UseLeadsParams {
   limit?: number;
   status?: string;
   search?: string;
+  source?: string;
 }
 
 export function useLeads(initialParams: UseLeadsParams = {}) {
@@ -50,6 +51,7 @@ export function useLeads(initialParams: UseLeadsParams = {}) {
 
       if (params.status) query.append("status", params.status);
       if (params.search) query.append("search", params.search);
+      if (params.source) query.append("source", params.source);
 
       const res = await fetch(
         `${API_URL}/api/admin/leads?${query.toString()}`,
@@ -65,7 +67,6 @@ export function useLeads(initialParams: UseLeadsParams = {}) {
         if (res.status === 401) {
           localStorage.removeItem("admin_token");
         }
-
         const data = await res.json().catch(() => ({}));
         throw new Error(data.error || "Failed to fetch leads");
       }
@@ -82,8 +83,8 @@ export function useLeads(initialParams: UseLeadsParams = {}) {
   }, [pagination.page, pagination.limit]);
 
   useEffect(() => {
-    fetchLeads();
-  }, [fetchLeads]);
+    fetchLeads({ ...initialParams });
+  }, [initialParams.page, initialParams.source]);
 
   return {
     leads,
