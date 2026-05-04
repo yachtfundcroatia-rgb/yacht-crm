@@ -354,7 +354,9 @@ export default function LeadsPage() {
                     className={`${inputClass} resize-none font-mono text-xs`}
                     required
                   />
-                  <p className="text-xs text-gray-400 mt-1.5">Use <code className="bg-gray-100 px-1 rounded">{"{{name}}"}</code> to personalize with recipient's name.</p>
+                  <p className="text-xs text-gray-400 mt-1.5">
+                    Tip: <code className="bg-gray-100 px-1 rounded">{"{{name}}"}</code> zostanie zastąpione imieniem i nazwiskiem odbiorcy z bazy. Np. wpisz <em>Dear {"{{name}}"},</em> a każdy otrzyma <em>Dear Jack Smith,</em>
+                  </p>
                 </div>
 
                 {emailResult && (
