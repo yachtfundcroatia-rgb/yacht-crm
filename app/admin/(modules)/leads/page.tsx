@@ -50,7 +50,8 @@ const EMPTY_EMAIL = {
 
 export default function LeadsPage() {
   const router = useRouter();
-  const { token, role } = useAdmin();
+  const { token, admin } = useAdmin();
+  const role = admin?.role;
   const [page, setPage] = useState(1);
   const [sourceFilter, setSourceFilter] = useState("");
   const { leads, loading, error, pagination, fetchLeads } = useLeads({ page, source: sourceFilter });
