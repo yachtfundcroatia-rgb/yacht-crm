@@ -108,10 +108,10 @@ export default function InvestModal({ open, onClose, defaultAmount = "" }: Props
                     className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#137fec] outline-none text-sm bg-white">
                     <option value="">—</option>
                     <option value="10000">€10,000</option>
-                    <option value="25000">€25,000</option>
-                    <option value="50000">€50,000</option>
-                    <option value="100000">€100,000</option>
-                    <option value="250000">€250,000+</option>
+                    <option value="20000">€20,000</option>
+                    <option value="30000">€30,000</option>
+                    <option value="40000">€40,000</option>
+                    <option value="50000">€50,000+</option>
                   </select>
                 </div>
 
