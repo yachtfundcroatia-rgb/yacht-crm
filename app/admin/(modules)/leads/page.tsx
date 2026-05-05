@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useLeads } from "./hooks/useLeads";
 import { useState } from "react";
-import { ChevronLeft, ChevronRight, Plus, X, Mail, Send } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, X, Mail, Send, Trash2 } from "lucide-react";
 import { useAdmin } from "@/app/context/AdminContext";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL!;
@@ -50,23 +50,22 @@ const EMPTY_EMAIL = {
 
 export default function LeadsPage() {
   const router = useRouter();
-  const { token } = useAdmin();
+  const { token, role } = useAdmin();
   const [page, setPage] = useState(1);
   const [sourceFilter, setSourceFilter] = useState("");
   const { leads, loading, error, pagination, fetchLeads } = useLeads({ page, source: sourceFilter });
 
-  // Add lead form
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState(EMPTY_FORM);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ text: string; ok: boolean } | null>(null);
 
-  // Email blast
   const [showEmailModal, setShowEmailModal] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [emailForm, setEmailForm] = useState(EMPTY_EMAIL);
   const [sendTarget, setSendTarget] = useState<"all" | "selected">("all");
   const [sending, setSending] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [emailResult, setEmailResult] = useState<{ text: string; ok: boolean } | null>(null);
 
   async function handleAddLead(e: React.FormEvent) {
@@ -151,11 +150,29 @@ export default function LeadsPage() {
     } finally { setSending(false); }
   }
 
+  async function handleDelete() {
+    if (selectedIds.size === 0) return;
+    if (!confirm(`Delete ${selectedIds.size} lead(s)? This cannot be undone.`)) return;
+    setDeleting(true);
+    try {
+      const res = await fetch(`${API_URL}/api/admin/leads/delete`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ lead_ids: Array.from(selectedIds) }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to delete");
+      setSelectedIds(new Set());
+      fetchLeads();
+    } catch (err: any) {
+      alert(err.message);
+    } finally { setDeleting(false); }
+  }
+
   const allSelected = leads.length > 0 && leads.every((l: any) => selectedIds.has(l.id));
 
   return (
     <div className="max-w-6xl">
-      {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-black text-[#0a192f] mb-1">Leads</h1>
@@ -169,6 +186,16 @@ export default function LeadsPage() {
             >
               <Mail className="w-4 h-4" />
               Email selected ({selectedIds.size})
+            </button>
+          )}
+          {selectedIds.size > 0 && role === "superadmin" && (
+            <button
+              onClick={handleDelete}
+              disabled={deleting}
+              className="flex items-center gap-2 px-4 py-2.5 bg-red-600 text-white rounded-xl font-bold text-sm hover:bg-red-700 transition-colors disabled:opacity-50"
+            >
+              <Trash2 className="w-4 h-4" />
+              {deleting ? "Deleting..." : `Delete (${selectedIds.size})`}
             </button>
           )}
           <button
