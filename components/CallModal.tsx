@@ -1,11 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useLang } from "@/lib/LanguageContext";
 import { t } from "@/lib/translations";
 import { PrivacyModal, TermsModal } from "@/components/LegalModals";
+import HCaptcha from "@hcaptcha/react-hcaptcha";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL!;
+const HCAPTCHA_SITE_KEY = process.env.NEXT_PUBLIC_HCAPTCHA_SITE_KEY!;
 
 interface Props {
   open: boolean;
@@ -21,31 +23,41 @@ export default function CallModal({ open, onClose }: Props) {
   const [loading, setLoading] = useState(false);
   const [privacyOpen, setPrivacyOpen] = useState(false);
   const [termsOpen, setTermsOpen] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const captchaRef = useRef<HCaptcha>(null);
 
   if (!open) return null;
 
   const handleClose = () => {
     setSuccess(false);
     setAccepted(false);
+    setCaptchaToken(null);
+    captchaRef.current?.resetCaptcha();
     setForm({ full_name: "", email: "", phone: "", preferred_call_time: "" });
     onClose();
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!accepted) return;
+    if (!accepted || !captchaToken) return;
     setLoading(true);
     try {
       const res = await fetch(`${API_URL}/api/public/lead`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...form, lead_type: "book_a_call" }),
+        body: JSON.stringify({
+          ...form,
+          lead_type: "book_a_call",
+          hcaptcha_token: captchaToken,
+        }),
       });
       if (res.ok) setSuccess(true);
     } catch (err) {
       console.error(err);
     } finally {
       setLoading(false);
+      captchaRef.current?.resetCaptcha();
+      setCaptchaToken(null);
     }
   };
 
@@ -119,7 +131,15 @@ export default function CallModal({ open, onClose }: Props) {
                   </label>
                 </div>
 
-                <button type="submit" disabled={loading || !accepted}
+                <HCaptcha
+                  ref={captchaRef}
+                  sitekey={HCAPTCHA_SITE_KEY}
+                  onVerify={(token) => setCaptchaToken(token)}
+                  onExpire={() => setCaptchaToken(null)}
+                  size="normal"
+                />
+
+                <button type="submit" disabled={loading || !accepted || !captchaToken}
                   className="w-full py-3 bg-[#0a192f] text-white rounded-lg font-bold hover:bg-[#0f2848] transition-colors disabled:opacity-50">
                   {loading ? T.invest_sending : T.call_submit}
                 </button>

@@ -1,11 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useLang } from "@/lib/LanguageContext";
 import { t } from "@/lib/translations";
 import { PrivacyModal, TermsModal } from "@/components/LegalModals";
+import HCaptcha from "@hcaptcha/react-hcaptcha";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL!;
+const HCAPTCHA_SITE_KEY = process.env.NEXT_PUBLIC_HCAPTCHA_SITE_KEY!;
 
 interface Props {
   open: boolean;
@@ -22,19 +24,23 @@ export default function InvestModal({ open, onClose, defaultAmount = "" }: Props
   const [loading, setLoading] = useState(false);
   const [privacyOpen, setPrivacyOpen] = useState(false);
   const [termsOpen, setTermsOpen] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const captchaRef = useRef<HCaptcha>(null);
 
   if (!open) return null;
 
   const handleClose = () => {
     setSuccess(false);
     setAccepted(false);
+    setCaptchaToken(null);
+    captchaRef.current?.resetCaptcha();
     setForm({ full_name: "", email: "", phone: "", investment_amount: "" });
     onClose();
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!accepted) return;
+    if (!accepted || !captchaToken) return;
     setLoading(true);
     try {
       const res = await fetch(`${API_URL}/api/public/lead`, {
@@ -44,6 +50,7 @@ export default function InvestModal({ open, onClose, defaultAmount = "" }: Props
           ...form,
           investment_amount: form.investment_amount ? Number(form.investment_amount) : null,
           lead_type: "invest_now",
+          hcaptcha_token: captchaToken,
         }),
       });
       if (res.ok) setSuccess(true);
@@ -51,10 +58,11 @@ export default function InvestModal({ open, onClose, defaultAmount = "" }: Props
       console.error(err);
     } finally {
       setLoading(false);
+      captchaRef.current?.resetCaptcha();
+      setCaptchaToken(null);
     }
   };
 
-  // Translated consent text with clickable links
   const consentText = {
     en: { pre: "I accept the ", terms: "Terms & Conditions", mid: " and ", privacy: "Privacy Policy", post: "" },
     pl: { pre: "Akceptuję ", terms: "Regulamin", mid: " oraz ", privacy: "Politykę Prywatności", post: "" },
@@ -115,7 +123,6 @@ export default function InvestModal({ open, onClose, defaultAmount = "" }: Props
                   </select>
                 </div>
 
-                {/* Consent checkbox */}
                 <div className="flex items-start gap-3 pt-1">
                   <input
                     type="checkbox"
@@ -133,7 +140,15 @@ export default function InvestModal({ open, onClose, defaultAmount = "" }: Props
                   </label>
                 </div>
 
-                <button type="submit" disabled={loading || !accepted}
+                <HCaptcha
+                  ref={captchaRef}
+                  sitekey={HCAPTCHA_SITE_KEY}
+                  onVerify={(token) => setCaptchaToken(token)}
+                  onExpire={() => setCaptchaToken(null)}
+                  size="normal"
+                />
+
+                <button type="submit" disabled={loading || !accepted || !captchaToken}
                   className="w-full py-3 bg-[#137fec] text-white rounded-lg font-bold hover:bg-[#0f6fd4] transition-colors disabled:opacity-50">
                   {loading ? T.invest_sending : T.invest_submit}
                 </button>

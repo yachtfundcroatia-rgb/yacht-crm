@@ -1,13 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 import { useLang } from "@/lib/LanguageContext";
 import { t } from "@/lib/translations";
 import { PrivacyModal, TermsModal } from "@/components/LegalModals";
+import HCaptcha from "@hcaptcha/react-hcaptcha";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL!;
+const HCAPTCHA_SITE_KEY = process.env.NEXT_PUBLIC_HCAPTCHA_SITE_KEY!;
 
 export default function ContactPage() {
   return (
@@ -45,6 +47,8 @@ function ContactContent() {
   const [error, setError] = useState<string | null>(null);
   const [privacyOpen, setPrivacyOpen] = useState(false);
   const [termsOpen, setTermsOpen] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const captchaRef = useRef<HCaptcha>(null);
 
   const consentText = {
     en: { pre: "I accept the ", terms: "Terms & Conditions", mid: " and ", privacy: "Privacy Policy", post: "" },
@@ -55,19 +59,23 @@ function ContactContent() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!accepted) return;
+    if (!accepted || !captchaToken) return;
     setLoading(true);
     setError(null);
     try {
       const res = await fetch(`${API_URL}/api/public/lead`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...form, lead_type: "contact" }),
+        body: JSON.stringify({ ...form, lead_type: "contact", hcaptcha_token: captchaToken }),
       });
       if (res.ok) setSuccess(true);
       else { const d = await res.json(); setError(d.error || "Something went wrong"); }
     } catch { setError("Server error. Please try again."); }
-    finally { setLoading(false); }
+    finally {
+      setLoading(false);
+      captchaRef.current?.resetCaptcha();
+      setCaptchaToken(null);
+    }
   }
 
   return (
@@ -151,8 +159,16 @@ function ContactContent() {
                   </label>
                 </div>
 
+                <HCaptcha
+                  ref={captchaRef}
+                  sitekey={HCAPTCHA_SITE_KEY}
+                  onVerify={(token) => setCaptchaToken(token)}
+                  onExpire={() => setCaptchaToken(null)}
+                  size="normal"
+                />
+
                 {error && <div className="px-4 py-3 bg-red-50 border border-red-100 rounded-xl text-sm text-red-600 font-medium">{error}</div>}
-                <button type="submit" disabled={loading || !accepted} className="w-full py-3.5 bg-[#137fec] text-white rounded-xl font-bold hover:bg-[#0f6fd4] transition-colors disabled:opacity-50">
+                <button type="submit" disabled={loading || !accepted || !captchaToken} className="w-full py-3.5 bg-[#137fec] text-white rounded-xl font-bold hover:bg-[#0f6fd4] transition-colors disabled:opacity-50">
                   {loading ? T.form_sending : T.form_submit}
                 </button>
               </form>
