@@ -2,8 +2,8 @@
 
 import { useRouter } from "next/navigation";
 import { useLeads } from "./hooks/useLeads";
-import { useState } from "react";
-import { ChevronLeft, ChevronRight, Plus, X, Mail, Send, Trash2 } from "lucide-react";
+import { useState, useRef } from "react";
+import { ChevronLeft, ChevronRight, Plus, X, Mail, Send, Trash2, Upload } from "lucide-react";
 import { useAdmin } from "@/app/context/AdminContext";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL!;
@@ -68,6 +68,13 @@ export default function LeadsPage() {
   const [sending, setSending] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [emailResult, setEmailResult] = useState<{ text: string; ok: boolean } | null>(null);
+
+  // CSV Import
+  const [showImportModal, setShowImportModal] = useState(false);
+  const [importing, setImporting] = useState(false);
+  const [importResult, setImportResult] = useState<{ text: string; ok: boolean } | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   async function handleAddLead(e: React.FormEvent) {
     e.preventDefault();
@@ -170,6 +177,33 @@ export default function LeadsPage() {
     } finally { setDeleting(false); }
   }
 
+  async function handleImport(e: React.FormEvent) {
+    e.preventDefault();
+    if (!selectedFile) return;
+    setImporting(true);
+    setImportResult(null);
+    try {
+      const formData = new FormData();
+      formData.append("file", selectedFile);
+      const res = await fetch(`${API_URL}/api/admin/leads/import`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData,
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Import failed");
+      setImportResult({
+        text: `✓ Imported ${data.imported} leads${data.skipped > 0 ? `, skipped ${data.skipped} duplicates` : ""}`,
+        ok: true,
+      });
+      setSelectedFile(null);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+      fetchLeads();
+    } catch (err: any) {
+      setImportResult({ text: err.message, ok: false });
+    } finally { setImporting(false); }
+  }
+
   const allSelected = leads.length > 0 && leads.every((l: any) => selectedIds.has(l.id));
 
   return (
@@ -199,6 +233,13 @@ export default function LeadsPage() {
               {deleting ? "Deleting..." : `Delete (${selectedIds.size})`}
             </button>
           )}
+          <button
+            onClick={() => { setShowImportModal(true); setImportResult(null); setSelectedFile(null); }}
+            className="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-xl font-bold text-sm hover:bg-gray-50 transition-colors"
+          >
+            <Upload className="w-4 h-4" />
+            Import CSV
+          </button>
           <button
             onClick={() => openEmailModal("all")}
             className="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-xl font-bold text-sm hover:bg-gray-50 transition-colors"
@@ -363,6 +404,73 @@ export default function LeadsPage() {
               className="flex items-center gap-1 px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm font-semibold text-gray-600 hover:bg-gray-50 disabled:opacity-40 transition-colors">
               Next<ChevronRight className="w-4 h-4" />
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Import CSV Modal */}
+      {showImportModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md relative">
+            <button onClick={() => setShowImportModal(false)} className="absolute top-4 right-5 text-gray-400 hover:text-gray-600 text-3xl font-light leading-none">×</button>
+            <div className="p-8">
+              <div className="flex items-center gap-3 mb-1">
+                <div className="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center">
+                  <Upload className="w-5 h-5 text-indigo-600" />
+                </div>
+                <h3 className="text-xl font-black text-[#0a192f]">Import Meta Ads CSV</h3>
+              </div>
+              <p className="text-sm text-gray-500 mb-6 mt-1">
+                Pobierz plik CSV z Meta Business Suite → Formularze leadów → Pobierz leady i wgraj tutaj. Duplikaty (ten sam email) będą automatycznie pominięte.
+              </p>
+              <form onSubmit={handleImport} className="space-y-4">
+                <div
+                  className="border-2 border-dashed border-gray-200 rounded-xl p-6 text-center cursor-pointer hover:border-[#137fec] transition-colors"
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <Upload className="w-8 h-8 text-gray-300 mx-auto mb-2" />
+                  {selectedFile ? (
+                    <p className="text-sm font-semibold text-[#0a192f]">{selectedFile.name}</p>
+                  ) : (
+                    <p className="text-sm text-gray-400">Kliknij aby wybrać plik CSV</p>
+                  )}
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept=".csv"
+                    className="hidden"
+                    onChange={(e) => {
+                      setSelectedFile(e.target.files?.[0] || null);
+                      setImportResult(null);
+                    }}
+                  />
+                </div>
+
+                {importResult && (
+                  <div className={`px-4 py-3 rounded-xl text-sm font-semibold ${importResult.ok ? "bg-green-50 text-green-700 border border-green-100" : "bg-red-50 text-red-600 border border-red-100"}`}>
+                    {importResult.text}
+                  </div>
+                )}
+
+                <div className="flex gap-3 pt-2">
+                  <button
+                    type="submit"
+                    disabled={importing || !selectedFile}
+                    className="flex items-center gap-2 px-6 py-2.5 bg-[#137fec] text-white rounded-xl font-bold text-sm hover:bg-[#0f6fd4] transition-colors disabled:opacity-50"
+                  >
+                    <Upload className="w-4 h-4" />
+                    {importing ? "Importing..." : "Import"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowImportModal(false)}
+                    className="px-6 py-2.5 bg-white border border-gray-200 text-gray-600 rounded-xl font-bold text-sm hover:bg-gray-50 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
       )}
