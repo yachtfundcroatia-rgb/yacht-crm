@@ -14,17 +14,20 @@ interface Pagination {
 
 interface UseLeadsParams {
   page?: number;
-  limit?: number;
+  limit?: number | string;
   status?: string;
   search?: string;
   source?: string;
+  date_from?: string;
+  date_to?: string;
+  sort?: string;
 }
 
 export function useLeads(initialParams: UseLeadsParams = {}) {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [pagination, setPagination] = useState<Pagination>({
     page: initialParams.page || 1,
-    limit: initialParams.limit || 10,
+    limit: typeof initialParams.limit === "number" ? initialParams.limit : 20,
     total: 0,
     totalPages: 0,
   });
@@ -52,6 +55,9 @@ export function useLeads(initialParams: UseLeadsParams = {}) {
       if (params.status) query.append("status", params.status);
       if (params.search) query.append("search", params.search);
       if (params.source) query.append("source", params.source);
+      if (params.date_from) query.append("date_from", params.date_from);
+      if (params.date_to) query.append("date_to", params.date_to);
+      if (params.sort) query.append("sort", params.sort);
 
       const res = await fetch(
         `${API_URL}/api/admin/leads?${query.toString()}`,
@@ -84,7 +90,7 @@ export function useLeads(initialParams: UseLeadsParams = {}) {
 
   useEffect(() => {
     fetchLeads({ ...initialParams });
-  }, [initialParams.page, initialParams.source]);
+  }, [initialParams.page, initialParams.source, initialParams.date_from, initialParams.date_to, initialParams.limit, initialParams.sort]);
 
   return {
     leads,

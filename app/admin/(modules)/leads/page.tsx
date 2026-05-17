@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useLeads } from "./hooks/useLeads";
 import { useState, useRef } from "react";
-import { ChevronLeft, ChevronRight, Plus, X, Mail, Send, Trash2, Upload } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, X, Mail, Send, Trash2, Upload, ArrowUpDown } from "lucide-react";
 import { useAdmin } from "@/app/context/AdminContext";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL!;
@@ -54,7 +54,19 @@ export default function LeadsPage() {
   const role = admin?.role;
   const [page, setPage] = useState(1);
   const [sourceFilter, setSourceFilter] = useState("");
-  const { leads, loading, error, pagination, fetchLeads } = useLeads({ page, source: sourceFilter });
+  const [limit, setLimit] = useState<number | string>(20);
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
+  const [sort, setSort] = useState("desc");
+
+  const { leads, loading, error, pagination, fetchLeads } = useLeads({
+    page,
+    source: sourceFilter,
+    limit,
+    date_from: dateFrom,
+    date_to: dateTo,
+    sort,
+  });
 
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState(EMPTY_FORM);
@@ -69,7 +81,6 @@ export default function LeadsPage() {
   const [deleting, setDeleting] = useState(false);
   const [emailResult, setEmailResult] = useState<{ text: string; ok: boolean } | null>(null);
 
-  // CSV Import
   const [showImportModal, setShowImportModal] = useState(false);
   const [importing, setImporting] = useState(false);
   const [importResult, setImportResult] = useState<{ text: string; ok: boolean } | null>(null);
@@ -215,63 +226,99 @@ export default function LeadsPage() {
         </div>
         <div className="flex items-center gap-3">
           {selectedIds.size > 0 && (
-            <button
-              onClick={() => openEmailModal("selected")}
-              className="flex items-center gap-2 px-4 py-2.5 bg-[#0a192f] text-white rounded-xl font-bold text-sm hover:bg-[#0f2848] transition-colors"
-            >
-              <Mail className="w-4 h-4" />
-              Email selected ({selectedIds.size})
+            <button onClick={() => openEmailModal("selected")}
+              className="flex items-center gap-2 px-4 py-2.5 bg-[#0a192f] text-white rounded-xl font-bold text-sm hover:bg-[#0f2848] transition-colors">
+              <Mail className="w-4 h-4" />Email selected ({selectedIds.size})
             </button>
           )}
           {selectedIds.size > 0 && role === "superadmin" && (
-            <button
-              onClick={handleDelete}
-              disabled={deleting}
-              className="flex items-center gap-2 px-4 py-2.5 bg-red-600 text-white rounded-xl font-bold text-sm hover:bg-red-700 transition-colors disabled:opacity-50"
-            >
+            <button onClick={handleDelete} disabled={deleting}
+              className="flex items-center gap-2 px-4 py-2.5 bg-red-600 text-white rounded-xl font-bold text-sm hover:bg-red-700 transition-colors disabled:opacity-50">
               <Trash2 className="w-4 h-4" />
               {deleting ? "Deleting..." : `Delete (${selectedIds.size})`}
             </button>
           )}
-          <button
-            onClick={() => { setShowImportModal(true); setImportResult(null); setSelectedFile(null); }}
-            className="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-xl font-bold text-sm hover:bg-gray-50 transition-colors"
-          >
-            <Upload className="w-4 h-4" />
-            Import CSV
+          <button onClick={() => { setShowImportModal(true); setImportResult(null); setSelectedFile(null); }}
+            className="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-xl font-bold text-sm hover:bg-gray-50 transition-colors">
+            <Upload className="w-4 h-4" />Import CSV
           </button>
-          <button
-            onClick={() => openEmailModal("all")}
-            className="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-xl font-bold text-sm hover:bg-gray-50 transition-colors"
-          >
-            <Send className="w-4 h-4" />
-            Email all
+          <button onClick={() => openEmailModal("all")}
+            className="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-xl font-bold text-sm hover:bg-gray-50 transition-colors">
+            <Send className="w-4 h-4" />Email all
           </button>
-          <button
-            onClick={() => { setShowForm(!showForm); setMessage(null); }}
-            className="flex items-center gap-2 px-5 py-2.5 bg-[#137fec] text-white rounded-xl font-bold text-sm hover:bg-[#0f6fd4] transition-colors"
-          >
+          <button onClick={() => { setShowForm(!showForm); setMessage(null); }}
+            className="flex items-center gap-2 px-5 py-2.5 bg-[#137fec] text-white rounded-xl font-bold text-sm hover:bg-[#0f6fd4] transition-colors">
             {showForm ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
             {showForm ? "Cancel" : "Add Lead"}
           </button>
         </div>
       </div>
 
-      {/* Source filter */}
-      <div className="flex items-center gap-2 mb-5">
-        {["", "website", "google_ads", "meta_ads"].map((src) => (
-          <button
-            key={src}
-            onClick={() => { setSourceFilter(src); setPage(1); }}
-            className={`px-4 py-1.5 rounded-full text-xs font-bold border transition-colors ${
-              sourceFilter === src
-                ? "bg-[#0a192f] text-white border-[#0a192f]"
-                : "bg-white text-gray-500 border-gray-200 hover:border-gray-300"
-            }`}
-          >
-            {src === "" ? "All sources" : SOURCE_LABELS[src]}
+      {/* Filters bar */}
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 mb-5 flex flex-wrap items-end gap-4">
+        {/* Source filter */}
+        <div>
+          <div className={labelClass}>Source</div>
+          <div className="flex items-center gap-1.5">
+            {["", "website", "google_ads", "meta_ads"].map((src) => (
+              <button key={src} onClick={() => { setSourceFilter(src); setPage(1); }}
+                className={`px-3 py-1.5 rounded-full text-xs font-bold border transition-colors ${
+                  sourceFilter === src ? "bg-[#0a192f] text-white border-[#0a192f]" : "bg-white text-gray-500 border-gray-200 hover:border-gray-300"
+                }`}>
+                {src === "" ? "All" : SOURCE_LABELS[src]}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Date from */}
+        <div>
+          <div className={labelClass}>Od</div>
+          <input type="date" value={dateFrom}
+            onChange={(e) => { setDateFrom(e.target.value); setPage(1); }}
+            className="px-3 py-2 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#137fec] focus:ring-2 focus:ring-[#137fec]/10 bg-white" />
+        </div>
+
+        {/* Date to */}
+        <div>
+          <div className={labelClass}>Do</div>
+          <input type="date" value={dateTo}
+            onChange={(e) => { setDateTo(e.target.value); setPage(1); }}
+            className="px-3 py-2 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#137fec] focus:ring-2 focus:ring-[#137fec]/10 bg-white" />
+        </div>
+
+        {/* Sort */}
+        <div>
+          <div className={labelClass}>Sortowanie</div>
+          <button onClick={() => { setSort(s => s === "desc" ? "asc" : "desc"); setPage(1); }}
+            className="flex items-center gap-1.5 px-3 py-2 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors bg-white">
+            <ArrowUpDown className="w-3.5 h-3.5" />
+            {sort === "desc" ? "Najnowsze" : "Najstarsze"}
           </button>
-        ))}
+        </div>
+
+        {/* Limit */}
+        <div>
+          <div className={labelClass}>Wyświetl</div>
+          <div className="flex items-center gap-1.5">
+            {[20, 50, 100, "all"].map((l) => (
+              <button key={l} onClick={() => { setLimit(l); setPage(1); }}
+                className={`px-3 py-1.5 rounded-full text-xs font-bold border transition-colors ${
+                  limit === l ? "bg-[#0a192f] text-white border-[#0a192f]" : "bg-white text-gray-500 border-gray-200 hover:border-gray-300"
+                }`}>
+                {l === "all" ? "Wszystkie" : l}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Reset */}
+        {(dateFrom || dateTo || sourceFilter || sort !== "desc" || limit !== 20) && (
+          <button onClick={() => { setDateFrom(""); setDateTo(""); setSourceFilter(""); setSort("desc"); setLimit(20); setPage(1); }}
+            className="px-3 py-2 text-xs font-bold text-red-500 hover:text-red-700 transition-colors">
+            Resetuj filtry
+          </button>
+        )}
       </div>
 
       {/* Add Lead Form */}
@@ -392,7 +439,7 @@ export default function LeadsPage() {
         </div>
       )}
 
-      {pagination.totalPages > 1 && (
+      {pagination.totalPages > 1 && limit !== "all" && (
         <div className="flex items-center justify-between">
           <span className="text-sm text-gray-500">Page {pagination.page} of {pagination.totalPages}</span>
           <div className="flex gap-2">
@@ -424,48 +471,29 @@ export default function LeadsPage() {
                 Pobierz plik CSV z Meta Business Suite → Formularze leadów → Pobierz leady i wgraj tutaj. Duplikaty (ten sam email) będą automatycznie pominięte.
               </p>
               <form onSubmit={handleImport} className="space-y-4">
-                <div
-                  className="border-2 border-dashed border-gray-200 rounded-xl p-6 text-center cursor-pointer hover:border-[#137fec] transition-colors"
-                  onClick={() => fileInputRef.current?.click()}
-                >
+                <div className="border-2 border-dashed border-gray-200 rounded-xl p-6 text-center cursor-pointer hover:border-[#137fec] transition-colors"
+                  onClick={() => fileInputRef.current?.click()}>
                   <Upload className="w-8 h-8 text-gray-300 mx-auto mb-2" />
                   {selectedFile ? (
                     <p className="text-sm font-semibold text-[#0a192f]">{selectedFile.name}</p>
                   ) : (
                     <p className="text-sm text-gray-400">Kliknij aby wybrać plik CSV</p>
                   )}
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept=".csv"
-                    className="hidden"
-                    onChange={(e) => {
-                      setSelectedFile(e.target.files?.[0] || null);
-                      setImportResult(null);
-                    }}
-                  />
+                  <input ref={fileInputRef} type="file" accept=".csv" className="hidden"
+                    onChange={(e) => { setSelectedFile(e.target.files?.[0] || null); setImportResult(null); }} />
                 </div>
-
                 {importResult && (
                   <div className={`px-4 py-3 rounded-xl text-sm font-semibold ${importResult.ok ? "bg-green-50 text-green-700 border border-green-100" : "bg-red-50 text-red-600 border border-red-100"}`}>
                     {importResult.text}
                   </div>
                 )}
-
                 <div className="flex gap-3 pt-2">
-                  <button
-                    type="submit"
-                    disabled={importing || !selectedFile}
-                    className="flex items-center gap-2 px-6 py-2.5 bg-[#137fec] text-white rounded-xl font-bold text-sm hover:bg-[#0f6fd4] transition-colors disabled:opacity-50"
-                  >
-                    <Upload className="w-4 h-4" />
-                    {importing ? "Importing..." : "Import"}
+                  <button type="submit" disabled={importing || !selectedFile}
+                    className="flex items-center gap-2 px-6 py-2.5 bg-[#137fec] text-white rounded-xl font-bold text-sm hover:bg-[#0f6fd4] transition-colors disabled:opacity-50">
+                    <Upload className="w-4 h-4" />{importing ? "Importing..." : "Import"}
                   </button>
-                  <button
-                    type="button"
-                    onClick={() => setShowImportModal(false)}
-                    className="px-6 py-2.5 bg-white border border-gray-200 text-gray-600 rounded-xl font-bold text-sm hover:bg-gray-50 transition-colors"
-                  >
+                  <button type="button" onClick={() => setShowImportModal(false)}
+                    className="px-6 py-2.5 bg-white border border-gray-200 text-gray-600 rounded-xl font-bold text-sm hover:bg-gray-50 transition-colors">
                     Cancel
                   </button>
                 </div>
@@ -488,9 +516,7 @@ export default function LeadsPage() {
                 <h3 className="text-xl font-black text-[#0a192f]">Send Email</h3>
               </div>
               <p className="text-sm text-gray-500 mb-6 ml-13">
-                {sendTarget === "all"
-                  ? `To all ${pagination.total} leads`
-                  : `To ${selectedIds.size} selected lead${selectedIds.size !== 1 ? "s" : ""}`}
+                {sendTarget === "all" ? `To all ${pagination.total} leads` : `To ${selectedIds.size} selected lead${selectedIds.size !== 1 ? "s" : ""}`}
               </p>
               <form onSubmit={handleSendEmail} className="space-y-4">
                 <div>
@@ -504,7 +530,7 @@ export default function LeadsPage() {
                     rows={8} placeholder={"Dear {{name}},\n\nYour message here...\n\nBest regards,\nYacht Fund Team"}
                     className={`${inputClass} resize-none font-mono text-xs`} required />
                   <p className="text-xs text-gray-400 mt-1.5">
-                    Tip: <code className="bg-gray-100 px-1 rounded">{"{{name}}"}</code> zostanie zastąpione imieniem i nazwiskiem odbiorcy z bazy. Np. wpisz <em>Dear {"{{name}}"},</em> a każdy otrzyma <em>Dear Jack Smith,</em>
+                    Tip: <code className="bg-gray-100 px-1 rounded">{"{{name}}"}</code> zostanie zastąpione imieniem i nazwiskiem odbiorcy z bazy.
                   </p>
                 </div>
                 {emailResult && (
@@ -515,8 +541,7 @@ export default function LeadsPage() {
                 <div className="flex gap-3 pt-2">
                   <button type="submit" disabled={sending}
                     className="flex items-center gap-2 px-6 py-2.5 bg-[#137fec] text-white rounded-xl font-bold text-sm hover:bg-[#0f6fd4] transition-colors disabled:opacity-50">
-                    <Send className="w-4 h-4" />
-                    {sending ? "Sending..." : "Send"}
+                    <Send className="w-4 h-4" />{sending ? "Sending..." : "Send"}
                   </button>
                   <button type="button" onClick={() => setShowEmailModal(false)}
                     className="px-6 py-2.5 bg-white border border-gray-200 text-gray-600 rounded-xl font-bold text-sm hover:bg-gray-50 transition-colors">
