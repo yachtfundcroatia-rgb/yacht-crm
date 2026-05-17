@@ -21,6 +21,13 @@ interface Lead {
   lead_type?: string | null;
 }
 
+interface LeadNote {
+  id: string;
+  note: string;
+  created_at: string;
+  created_by: string;
+}
+
 interface Reservation {
   id: string;
   investor_ref?: string | null;
@@ -60,6 +67,7 @@ export default function LeadDetailPage() {
   const leadId = params.lead_id as string;
 
   const [lead, setLead] = useState<Lead | null>(null);
+  const [leadNotes, setLeadNotes] = useState<LeadNote[]>([]);
   const [reservation, setReservation] = useState<Reservation | null>(null);
   const [allowedTransitions, setAllowedTransitions] = useState<string[]>([]);
   const [investments, setInvestments] = useState<Investment[]>([]);
@@ -86,6 +94,7 @@ export default function LeadDetailPage() {
     });
     const data = await res.json();
     setLead(data.lead);
+    setLeadNotes(data.notes || []);
     setAllowedTransitions(data.allowedTransitions || []);
     setReservation(data.reservation || null);
     if (data.reservation?.remaining_amount) {
@@ -110,7 +119,6 @@ export default function LeadDetailPage() {
     });
     const data = await res.json();
     if (Array.isArray(data)) {
-      // Only show fundraising investments for reservation
       const active = data.filter((inv: Investment) => inv.status === "fundraising");
       setInvestments(active);
       if (active.length === 1) setSelectedInvestment(active[0].id);
@@ -146,10 +154,19 @@ export default function LeadDetailPage() {
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ lead_id: leadId, note }),
       });
-      if (res.ok) { setNoteMsg("Note saved"); setNote(""); await fetchLead(); }
-      else { const d = await res.json(); setNoteMsg(d.error || "Failed"); }
-    } catch { setNoteMsg("Error saving note"); }
-    finally { setSavingNote(false); }
+      if (res.ok) {
+        setNoteMsg("Note saved");
+        setNote("");
+        await fetchLead();
+      } else {
+        const d = await res.json();
+        setNoteMsg(d.error || "Failed");
+      }
+    } catch {
+      setNoteMsg("Error saving note");
+    } finally {
+      setSavingNote(false);
+    }
   }
 
   async function createReservation() {
@@ -296,20 +313,33 @@ export default function LeadDetailPage() {
         {lead.notes && (
           <div className="mt-4 p-3 bg-[#f8faff] rounded-xl border border-blue-50">
             <div className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-1">Notes</div>
-            <p className="text-sm text-gray-700 leading-relaxed">{lead.notes}</p>
+            <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-line">{lead.notes}</p>
           </div>
         )}
       </div>
 
       <div className="grid lg:grid-cols-2 gap-4">
         {/* Add Note */}
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 lg:col-span-2">
           <h2 className="font-black text-[#0a192f] mb-4">Add Note</h2>
           <textarea value={note} onChange={(e) => setNote(e.target.value)} rows={3} placeholder="Add a note about this lead..." className={`${inputClass} resize-none mb-3`} />
           {noteMsg && <p className={`text-xs font-semibold mb-2 ${noteMsg === "Note saved" ? "text-green-600" : "text-red-500"}`}>{noteMsg}</p>}
           <button onClick={saveNote} disabled={savingNote || !note.trim()} className="px-4 py-2 bg-[#137fec] text-white rounded-lg text-sm font-bold hover:bg-[#0f6fd4] transition-colors disabled:opacity-40">
             {savingNote ? "Saving..." : "Save Note"}
           </button>
+
+          {/* Notes list */}
+          {leadNotes.length > 0 && (
+            <div className="mt-6 space-y-3">
+              <div className="text-xs font-bold text-gray-400 uppercase tracking-wide">Previous notes</div>
+              {leadNotes.map((n) => (
+                <div key={n.id} className="p-3 bg-gray-50 rounded-xl border border-gray-100">
+                  <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-line">{n.note}</p>
+                  <p className="text-xs text-gray-400 mt-2">{new Date(n.created_at).toLocaleString()}</p>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Status Actions */}
@@ -350,7 +380,6 @@ export default function LeadDetailPage() {
         {admin?.role === "superadmin" && (
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
             <h2 className="font-black text-[#0a192f] mb-4">Reservation</h2>
-
             {!reservation && (
               <div className="space-y-3">
                 <div>
@@ -373,7 +402,6 @@ export default function LeadDetailPage() {
                 </button>
               </div>
             )}
-
             {reservation && (
               <div className="space-y-3">
                 <div className="grid grid-cols-2 gap-3">
@@ -411,7 +439,7 @@ export default function LeadDetailPage() {
           </div>
         )}
 
-        {/* Confirm Capital Payment — superadmin only, shown after conversion */}
+        {/* Confirm Capital Payment */}
         {admin?.role === "superadmin" && hasCapitalPending && (
           <div className="bg-white rounded-2xl border border-green-100 shadow-sm p-6 lg:col-span-2">
             <div className="flex items-center gap-2 mb-2">
@@ -420,11 +448,11 @@ export default function LeadDetailPage() {
             </div>
             <p className="text-xs text-gray-500 mb-4">
               Investor has been created. Confirm when the remaining capital has been received.
-              This will book <strong>€{(Number(reservation.remaining_amount) + Number(reservation.deposit_amount)).toLocaleString()}</strong> (deposit + remaining) to the financial ledger.
+              This will book <strong>€{(Number(reservation.remaining_amount) + Number(reservation.deposit_amount)).toLocaleString()}</strong> to the financial ledger.
             </p>
             <div className="flex gap-3 items-end">
               <div className="flex-1">
-                <label className={labelClass}>Capital Amount (€) — adjust if needed</label>
+                <label className={labelClass}>Capital Amount (€)</label>
                 <input type="number" value={capitalAmount} onChange={(e) => setCapitalAmount(e.target.value)} className={inputClass} />
               </div>
               <button onClick={confirmCapitalPayment} disabled={confirmingCapital || !capitalAmount}
@@ -432,10 +460,6 @@ export default function LeadDetailPage() {
                 {confirmingCapital ? "Confirming..." : "Confirm Capital Paid"}
               </button>
             </div>
-            <p className="text-xs text-gray-400 mt-2">
-              Ledger will record: €{capitalAmount ? (Number(capitalAmount) + Number(reservation.deposit_amount)).toLocaleString() : "—"}
-              (€{capitalAmount || "0"} remaining + €{Number(reservation.deposit_amount).toLocaleString()} deposit)
-            </p>
           </div>
         )}
       </div>
