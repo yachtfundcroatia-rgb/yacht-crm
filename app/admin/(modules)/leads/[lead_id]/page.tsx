@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useAdmin } from "@/app/context/AdminContext";
-import { ArrowLeft, Mail, Phone, CheckCircle } from "lucide-react";
+import { ArrowLeft, Mail, Phone, CheckCircle, Send } from "lucide-react";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL!;
 
@@ -87,6 +87,13 @@ export default function LeadDetailPage() {
   const [message, setMessage] = useState<{ text: string; ok: boolean } | null>(null);
   const [capitalAmount, setCapitalAmount] = useState("");
 
+  // Email modal
+  const [showEmailModal, setShowEmailModal] = useState(false);
+  const [emailSubject, setEmailSubject] = useState("");
+  const [emailBody, setEmailBody] = useState("");
+  const [sendingEmail, setSendingEmail] = useState(false);
+  const [emailResult, setEmailResult] = useState<{ text: string; ok: boolean } | null>(null);
+
   async function fetchLead() {
     if (!token) return router.replace("/login");
     const res = await fetch(`${API_URL}/api/admin/leads/${leadId}`, {
@@ -132,6 +139,38 @@ export default function LeadDetailPage() {
       fetchInvestments();
     }
   }, [leadId, token]);
+
+  function openEmailModal() {
+    setEmailSubject("Yacht Fund - informacje o projekcie");
+    setEmailBody(`Dzień dobry ${lead?.full_name || ""},\n\n`);
+    setEmailResult(null);
+    setShowEmailModal(true);
+  }
+
+  async function sendEmail(e: React.FormEvent) {
+    e.preventDefault();
+    if (!emailSubject || !emailBody || !lead?.email) return;
+    setSendingEmail(true);
+    setEmailResult(null);
+    try {
+      const res = await fetch(`${API_URL}/api/admin/email/send`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          subject: emailSubject,
+          html: emailBody.replace(/\n/g, "<br>"),
+          lead_ids: [lead.id],
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to send");
+      setEmailResult({ text: "✓ Email wysłany", ok: true });
+      setEmailSubject("");
+      setEmailBody("");
+    } catch (err: any) {
+      setEmailResult({ text: err.message, ok: false });
+    } finally { setSendingEmail(false); }
+  }
 
   async function handleTransition(status: string) {
     setUpdating(true);
@@ -306,9 +345,15 @@ export default function LeadDetailPage() {
             </div>
             {lead.lead_type && <span className="inline-flex mt-2 px-2 py-0.5 rounded-full text-xs font-bold bg-gray-100 text-gray-600">{lead.lead_type}</span>}
           </div>
-          <span className={`inline-flex items-center px-3 py-1.5 rounded-full text-sm font-bold ${STATUS_COLORS[lead.status] || "bg-gray-100 text-gray-600"}`}>
-            {lead.status}
-          </span>
+          <div className="flex items-center gap-3">
+            <button onClick={openEmailModal}
+              className="flex items-center gap-2 px-4 py-2 bg-[#137fec] text-white rounded-xl text-sm font-bold hover:bg-[#0f6fd4] transition-colors">
+              <Send className="w-4 h-4" />Send Email
+            </button>
+            <span className={`inline-flex items-center px-3 py-1.5 rounded-full text-sm font-bold ${STATUS_COLORS[lead.status] || "bg-gray-100 text-gray-600"}`}>
+              {lead.status}
+            </span>
+          </div>
         </div>
         {lead.notes && (
           <div className="mt-4 p-3 bg-[#f8faff] rounded-xl border border-blue-50">
@@ -327,8 +372,6 @@ export default function LeadDetailPage() {
           <button onClick={saveNote} disabled={savingNote || !note.trim()} className="px-4 py-2 bg-[#137fec] text-white rounded-lg text-sm font-bold hover:bg-[#0f6fd4] transition-colors disabled:opacity-40">
             {savingNote ? "Saving..." : "Save Note"}
           </button>
-
-          {/* Notes list */}
           {leadNotes.length > 0 && (
             <div className="mt-6 space-y-3">
               <div className="text-xs font-bold text-gray-400 uppercase tracking-wide">Previous notes</div>
@@ -463,6 +506,70 @@ export default function LeadDetailPage() {
           </div>
         )}
       </div>
+
+      {/* Email Modal */}
+      {showEmailModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg relative">
+            <button onClick={() => setShowEmailModal(false)} className="absolute top-4 right-5 text-gray-400 hover:text-gray-600 text-3xl font-light leading-none">×</button>
+            <div className="p-8">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center">
+                  <Send className="w-5 h-5 text-[#137fec]" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-black text-[#0a192f]">Send Email</h3>
+                  <p className="text-sm text-gray-500">To: {lead.full_name} &lt;{lead.email}&gt;</p>
+                </div>
+              </div>
+
+              {/* Lead context */}
+              {lead.notes && (
+                <div className="mb-4 p-3 bg-[#f8faff] rounded-xl border border-blue-50">
+                  <div className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-1">Notes leada</div>
+                  <p className="text-xs text-gray-600 leading-relaxed">{lead.notes}</p>
+                </div>
+              )}
+              {leadNotes.length > 0 && (
+                <div className="mb-4 p-3 bg-gray-50 rounded-xl border border-gray-100 max-h-32 overflow-y-auto">
+                  <div className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2">Poprzednie notatki</div>
+                  {leadNotes.slice(0, 3).map((n) => (
+                    <p key={n.id} className="text-xs text-gray-600 mb-1 pb-1 border-b border-gray-100 last:border-0">{n.note}</p>
+                  ))}
+                </div>
+              )}
+
+              <form onSubmit={sendEmail} className="space-y-4">
+                <div>
+                  <label className={labelClass}>Temat</label>
+                  <input type="text" value={emailSubject} onChange={(e) => setEmailSubject(e.target.value)}
+                    className={inputClass} required />
+                </div>
+                <div>
+                  <label className={labelClass}>Wiadomość</label>
+                  <textarea value={emailBody} onChange={(e) => setEmailBody(e.target.value)}
+                    rows={10} className={`${inputClass} resize-none font-mono text-xs`} required />
+                </div>
+                {emailResult && (
+                  <div className={`px-4 py-3 rounded-xl text-sm font-semibold ${emailResult.ok ? "bg-green-50 text-green-700 border border-green-100" : "bg-red-50 text-red-600 border border-red-100"}`}>
+                    {emailResult.text}
+                  </div>
+                )}
+                <div className="flex gap-3 pt-2">
+                  <button type="submit" disabled={sendingEmail}
+                    className="flex items-center gap-2 px-6 py-2.5 bg-[#137fec] text-white rounded-xl font-bold text-sm hover:bg-[#0f6fd4] transition-colors disabled:opacity-50">
+                    <Send className="w-4 h-4" />{sendingEmail ? "Wysyłanie..." : "Wyślij"}
+                  </button>
+                  <button type="button" onClick={() => setShowEmailModal(false)}
+                    className="px-6 py-2.5 bg-white border border-gray-200 text-gray-600 rounded-xl font-bold text-sm hover:bg-gray-50 transition-colors">
+                    Anuluj
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
