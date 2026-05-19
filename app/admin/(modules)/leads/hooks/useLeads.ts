@@ -90,7 +90,7 @@ export function useLeads(initialParams: UseLeadsParams = {}) {
 
   useEffect(() => {
     fetchLeads({ ...initialParams });
-  }, [initialParams.page, initialParams.source, initialParams.date_from, initialParams.date_to, initialParams.limit, initialParams.sort]);
+  }, [initialParams.page, initialParams.source, initialParams.date_from, initialParams.date_to, initialParams.limit, initialParams.sort, initialParams.search]);
 
   return {
     leads,

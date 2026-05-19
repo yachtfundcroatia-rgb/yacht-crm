@@ -58,10 +58,12 @@ export default function LeadsPage() {
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [sort, setSort] = useState("desc");
+  const [search, setSearch] = useState("");
 
   const { leads, loading, error, pagination, fetchLeads } = useLeads({
     page,
     source: sourceFilter,
+    search,
     limit,
     date_from: dateFrom,
     date_to: dateTo,
@@ -256,6 +258,17 @@ export default function LeadsPage() {
 
       {/* Filters bar */}
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 mb-5 flex flex-wrap items-end gap-4">
+        {/* Search */}
+        <div className="flex-1 min-w-[200px]">
+          <div className={labelClass}>Szukaj</div>
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+            placeholder="Imię, nazwisko lub email..."
+            className="w-full px-4 py-2 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#137fec] focus:ring-2 focus:ring-[#137fec]/10 bg-white"
+          />
+        </div>
         {/* Source filter */}
         <div>
           <div className={labelClass}>Source</div>
@@ -313,8 +326,8 @@ export default function LeadsPage() {
         </div>
 
         {/* Reset */}
-        {(dateFrom || dateTo || sourceFilter || sort !== "desc" || limit !== 20) && (
-          <button onClick={() => { setDateFrom(""); setDateTo(""); setSourceFilter(""); setSort("desc"); setLimit(20); setPage(1); }}
+        {(dateFrom || dateTo || sourceFilter || sort !== "desc" || limit !== 20 || search) && (
+          <button onClick={() => { setDateFrom(""); setDateTo(""); setSourceFilter(""); setSort("desc"); setLimit(20); setSearch(""); setPage(1); }}
             className="px-3 py-2 text-xs font-bold text-red-500 hover:text-red-700 transition-colors">
             Resetuj filtry
           </button>
