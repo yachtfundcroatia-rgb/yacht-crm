@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useLeads } from "./hooks/useLeads";
 import { useState, useRef } from "react";
-import { ChevronLeft, ChevronRight, Plus, X, Mail, Send, Trash2, Upload, ArrowUpDown } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, X, Mail, Send, Trash2, Upload, ArrowUpDown, Paperclip } from "lucide-react";
 import { useAdmin } from "@/app/context/AdminContext";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL!;
@@ -82,6 +82,8 @@ export default function LeadsPage() {
   const [sending, setSending] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [emailResult, setEmailResult] = useState<{ text: string; ok: boolean } | null>(null);
+  const [emailAttachments, setEmailAttachments] = useState<File[]>([]);
+  const emailFileInputRef = useRef<HTMLInputElement>(null);
 
   const [showImportModal, setShowImportModal] = useState(false);
   const [importing, setImporting] = useState(false);
@@ -138,6 +140,7 @@ export default function LeadsPage() {
     setSendTarget(target);
     setEmailForm(EMPTY_EMAIL);
     setEmailResult(null);
+    setEmailAttachments([]);
     setShowEmailModal(true);
   }
 
@@ -150,22 +153,25 @@ export default function LeadsPage() {
     setSending(true);
     setEmailResult(null);
     try {
-      const body: any = {
-        subject: emailForm.subject,
-        html: emailForm.html.replace(/\n/g, "<br>"),
-      };
+      const formData = new FormData();
+      formData.append("subject", emailForm.subject);
+      formData.append("html", emailForm.html.replace(/\n/g, "<br>"));
       if (sendTarget === "selected") {
-        body.lead_ids = Array.from(selectedIds);
+        formData.append("lead_ids", JSON.stringify(Array.from(selectedIds)));
+      }
+      for (const file of emailAttachments) {
+        formData.append("attachments", file);
       }
       const res = await fetch(`${API_URL}/api/admin/email/send`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify(body),
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData,
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to send");
       setEmailResult({ text: `✓ Sent to ${data.sent} recipient${data.sent !== 1 ? "s" : ""}`, ok: true });
       setEmailForm(EMPTY_EMAIL);
+      setEmailAttachments([]);
     } catch (err: any) {
       setEmailResult({ text: err.message, ok: false });
     } finally { setSending(false); }
@@ -258,18 +264,13 @@ export default function LeadsPage() {
 
       {/* Filters bar */}
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 mb-5 flex flex-wrap items-end gap-4">
-        {/* Search */}
         <div className="flex-1 min-w-[200px]">
           <div className={labelClass}>Szukaj</div>
-          <input
-            type="text"
-            value={search}
+          <input type="text" value={search}
             onChange={(e) => { setSearch(e.target.value); setPage(1); }}
             placeholder="Imię, nazwisko lub email..."
-            className="w-full px-4 py-2 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#137fec] focus:ring-2 focus:ring-[#137fec]/10 bg-white"
-          />
+            className="w-full px-4 py-2 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#137fec] focus:ring-2 focus:ring-[#137fec]/10 bg-white" />
         </div>
-        {/* Source filter */}
         <div>
           <div className={labelClass}>Source</div>
           <div className="flex items-center gap-1.5">
@@ -283,24 +284,18 @@ export default function LeadsPage() {
             ))}
           </div>
         </div>
-
-        {/* Date from */}
         <div>
           <div className={labelClass}>Od</div>
           <input type="date" value={dateFrom}
             onChange={(e) => { setDateFrom(e.target.value); setPage(1); }}
             className="px-3 py-2 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#137fec] focus:ring-2 focus:ring-[#137fec]/10 bg-white" />
         </div>
-
-        {/* Date to */}
         <div>
           <div className={labelClass}>Do</div>
           <input type="date" value={dateTo}
             onChange={(e) => { setDateTo(e.target.value); setPage(1); }}
             className="px-3 py-2 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#137fec] focus:ring-2 focus:ring-[#137fec]/10 bg-white" />
         </div>
-
-        {/* Sort */}
         <div>
           <div className={labelClass}>Sortowanie</div>
           <button onClick={() => { setSort(s => s === "desc" ? "asc" : "desc"); setPage(1); }}
@@ -309,8 +304,6 @@ export default function LeadsPage() {
             {sort === "desc" ? "Najnowsze" : "Najstarsze"}
           </button>
         </div>
-
-        {/* Limit */}
         <div>
           <div className={labelClass}>Wyświetl</div>
           <div className="flex items-center gap-1.5">
@@ -324,8 +317,6 @@ export default function LeadsPage() {
             ))}
           </div>
         </div>
-
-        {/* Reset */}
         {(dateFrom || dateTo || sourceFilter || sort !== "desc" || limit !== 20 || search) && (
           <button onClick={() => { setDateFrom(""); setDateTo(""); setSourceFilter(""); setSort("desc"); setLimit(20); setSearch(""); setPage(1); }}
             className="px-3 py-2 text-xs font-bold text-red-500 hover:text-red-700 transition-colors">
@@ -546,6 +537,33 @@ export default function LeadsPage() {
                     Tip: <code className="bg-gray-100 px-1 rounded">{"{{name}}"}</code> zostanie zastąpione imieniem i nazwiskiem odbiorcy z bazy.
                   </p>
                 </div>
+
+                {/* Attachments */}
+                <div>
+                  <label className={labelClass}>Załączniki</label>
+                  <div className="border-2 border-dashed border-gray-200 rounded-xl p-4 text-center cursor-pointer hover:border-[#137fec] transition-colors"
+                    onClick={() => emailFileInputRef.current?.click()}>
+                    <Paperclip className="w-5 h-5 text-gray-300 mx-auto mb-1" />
+                    <p className="text-xs text-gray-400">Kliknij aby dodać załącznik (PDF, DOC, itp.)</p>
+                    <input ref={emailFileInputRef} type="file" multiple className="hidden"
+                      onChange={(e) => {
+                        const files = Array.from(e.target.files || []);
+                        setEmailAttachments(prev => [...prev, ...files]);
+                      }} />
+                  </div>
+                  {emailAttachments.length > 0 && (
+                    <div className="mt-2 space-y-1">
+                      {emailAttachments.map((file, i) => (
+                        <div key={i} className="flex items-center justify-between px-3 py-1.5 bg-gray-50 rounded-lg">
+                          <span className="text-xs text-gray-600 font-medium">{file.name}</span>
+                          <button type="button" onClick={() => setEmailAttachments(prev => prev.filter((_, idx) => idx !== i))}
+                            className="text-gray-400 hover:text-red-500 transition-colors text-lg leading-none">×</button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
                 {emailResult && (
                   <div className={`px-4 py-3 rounded-xl text-sm font-semibold ${emailResult.ok ? "bg-green-50 text-green-700 border border-green-100" : "bg-red-50 text-red-600 border border-red-100"}`}>
                     {emailResult.text}
