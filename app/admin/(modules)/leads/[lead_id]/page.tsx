@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useAdmin } from "@/app/context/AdminContext";
-import { ArrowLeft, Mail, Phone, CheckCircle, Send } from "lucide-react";
+import { ArrowLeft, Mail, Phone, CheckCircle, Send, Paperclip } from "lucide-react";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL!;
 
@@ -93,6 +93,8 @@ export default function LeadDetailPage() {
   const [emailBody, setEmailBody] = useState("");
   const [sendingEmail, setSendingEmail] = useState(false);
   const [emailResult, setEmailResult] = useState<{ text: string; ok: boolean } | null>(null);
+  const [emailAttachments, setEmailAttachments] = useState<File[]>([]);
+  const emailFileInputRef = useRef<HTMLInputElement>(null);
 
   async function fetchLead() {
     if (!token) return router.replace("/login");
@@ -144,6 +146,7 @@ export default function LeadDetailPage() {
     setEmailSubject("Yacht Fund - informacje o projekcie");
     setEmailBody(`Dzień dobry ${lead?.full_name || ""},\n\n`);
     setEmailResult(null);
+    setEmailAttachments([]);
     setShowEmailModal(true);
   }
 
@@ -153,20 +156,24 @@ export default function LeadDetailPage() {
     setSendingEmail(true);
     setEmailResult(null);
     try {
+      const formData = new FormData();
+      formData.append("subject", emailSubject);
+      formData.append("html", emailBody.replace(/\n/g, "<br>"));
+      formData.append("lead_ids", JSON.stringify([lead.id]));
+      for (const file of emailAttachments) {
+        formData.append("attachments", file);
+      }
       const res = await fetch(`${API_URL}/api/admin/email/send`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({
-          subject: emailSubject,
-          html: emailBody.replace(/\n/g, "<br>"),
-          lead_ids: [lead.id],
-        }),
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData,
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to send");
       setEmailResult({ text: "✓ Email wysłany", ok: true });
       setEmailSubject("");
       setEmailBody("");
+      setEmailAttachments([]);
     } catch (err: any) {
       setEmailResult({ text: err.message, ok: false });
     } finally { setSendingEmail(false); }
@@ -523,7 +530,6 @@ export default function LeadDetailPage() {
                 </div>
               </div>
 
-              {/* Lead context */}
               {lead.notes && (
                 <div className="mb-4 p-3 bg-[#f8faff] rounded-xl border border-blue-50">
                   <div className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-1">Notes leada</div>
@@ -548,8 +554,35 @@ export default function LeadDetailPage() {
                 <div>
                   <label className={labelClass}>Wiadomość</label>
                   <textarea value={emailBody} onChange={(e) => setEmailBody(e.target.value)}
-                    rows={10} className={`${inputClass} resize-none font-mono text-xs`} required />
+                    rows={8} className={`${inputClass} resize-none font-mono text-xs`} required />
                 </div>
+
+                {/* Attachments */}
+                <div>
+                  <label className={labelClass}>Załączniki</label>
+                  <div className="border-2 border-dashed border-gray-200 rounded-xl p-4 text-center cursor-pointer hover:border-[#137fec] transition-colors"
+                    onClick={() => emailFileInputRef.current?.click()}>
+                    <Paperclip className="w-5 h-5 text-gray-300 mx-auto mb-1" />
+                    <p className="text-xs text-gray-400">Kliknij aby dodać załącznik (PDF, DOC, itp.)</p>
+                    <input ref={emailFileInputRef} type="file" multiple className="hidden"
+                      onChange={(e) => {
+                        const files = Array.from(e.target.files || []);
+                        setEmailAttachments(prev => [...prev, ...files]);
+                      }} />
+                  </div>
+                  {emailAttachments.length > 0 && (
+                    <div className="mt-2 space-y-1">
+                      {emailAttachments.map((file, i) => (
+                        <div key={i} className="flex items-center justify-between px-3 py-1.5 bg-gray-50 rounded-lg">
+                          <span className="text-xs text-gray-600 font-medium">{file.name}</span>
+                          <button type="button" onClick={() => setEmailAttachments(prev => prev.filter((_, idx) => idx !== i))}
+                            className="text-gray-400 hover:text-red-500 transition-colors text-lg leading-none">×</button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
                 {emailResult && (
                   <div className={`px-4 py-3 rounded-xl text-sm font-semibold ${emailResult.ok ? "bg-green-50 text-green-700 border border-green-100" : "bg-red-50 text-red-600 border border-red-100"}`}>
                     {emailResult.text}
