@@ -268,7 +268,7 @@ export default function LeadsPage() {
           <div className={labelClass}>Szukaj</div>
           <input type="text" value={search}
             onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-            placeholder="Imię, nazwisko lub email..."
+            placeholder="Imię, nazwisko, email lub telefon..."
             className="w-full px-4 py-2 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#137fec] focus:ring-2 focus:ring-[#137fec]/10 bg-white" />
         </div>
         <div>
