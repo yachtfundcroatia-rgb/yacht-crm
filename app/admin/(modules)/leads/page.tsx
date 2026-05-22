@@ -1,8 +1,8 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useLeads } from "./hooks/useLeads";
-import { useState, useRef } from "react";
+import { useState, useRef, useCallback } from "react";
 import { ChevronLeft, ChevronRight, Plus, X, Mail, Send, Trash2, Upload, ArrowUpDown, Paperclip } from "lucide-react";
 import { useAdmin } from "@/app/context/AdminContext";
 
@@ -50,15 +50,46 @@ const EMPTY_EMAIL = {
 
 export default function LeadsPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { token, admin } = useAdmin();
   const role = admin?.role;
-  const [page, setPage] = useState(1);
-  const [sourceFilter, setSourceFilter] = useState("");
-  const [limit, setLimit] = useState<number | string>(20);
-  const [dateFrom, setDateFrom] = useState("");
-  const [dateTo, setDateTo] = useState("");
-  const [sort, setSort] = useState("desc");
-  const [search, setSearch] = useState("");
+
+  // Filtry z URL
+  const page = parseInt(searchParams.get("page") || "1");
+  const sourceFilter = searchParams.get("source") || "";
+  const limitParam = searchParams.get("limit") || "20";
+  const limit: number | string = limitParam === "all" ? "all" : parseInt(limitParam);
+  const dateFrom = searchParams.get("date_from") || "";
+  const dateTo = searchParams.get("date_to") || "";
+  const sort = searchParams.get("sort") || "desc";
+  const search = searchParams.get("search") || "";
+
+  // Helper do aktualizacji URL
+  const updateParams = useCallback((updates: Record<string, string>) => {
+    const params = new URLSearchParams(searchParams.toString());
+    Object.entries(updates).forEach(([key, value]) => {
+      if (value) {
+        params.set(key, value);
+      } else {
+        params.delete(key);
+      }
+    });
+    router.push(`?${params.toString()}`, { scroll: false });
+  }, [searchParams, router]);
+
+  const setPage = (p: number | ((prev: number) => number)) => {
+    const newPage = typeof p === "function" ? p(page) : p;
+    updateParams({ page: String(newPage) });
+  };
+  const setSourceFilter = (src: string) => updateParams({ source: src, page: "1" });
+  const setLimit = (l: number | string) => updateParams({ limit: String(l), page: "1" });
+  const setDateFrom = (d: string) => updateParams({ date_from: d, page: "1" });
+  const setDateTo = (d: string) => updateParams({ date_to: d, page: "1" });
+  const setSort = (s: string | ((prev: string) => string)) => {
+    const newSort = typeof s === "function" ? s(sort) : s;
+    updateParams({ sort: newSort, page: "1" });
+  };
+  const setSearch = (s: string) => updateParams({ search: s, page: "1" });
 
   const { leads, loading, error, pagination, fetchLeads } = useLeads({
     page,
@@ -267,7 +298,7 @@ export default function LeadsPage() {
         <div className="flex-1 min-w-[200px]">
           <div className={labelClass}>Szukaj</div>
           <input type="text" value={search}
-            onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+            onChange={(e) => setSearch(e.target.value)}
             placeholder="Imię, nazwisko, email lub telefon..."
             className="w-full px-4 py-2 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#137fec] focus:ring-2 focus:ring-[#137fec]/10 bg-white" />
         </div>
@@ -275,7 +306,7 @@ export default function LeadsPage() {
           <div className={labelClass}>Source</div>
           <div className="flex items-center gap-1.5">
             {["", "website", "google_ads", "meta_ads"].map((src) => (
-              <button key={src} onClick={() => { setSourceFilter(src); setPage(1); }}
+              <button key={src} onClick={() => setSourceFilter(src)}
                 className={`px-3 py-1.5 rounded-full text-xs font-bold border transition-colors ${
                   sourceFilter === src ? "bg-[#0a192f] text-white border-[#0a192f]" : "bg-white text-gray-500 border-gray-200 hover:border-gray-300"
                 }`}>
@@ -287,18 +318,18 @@ export default function LeadsPage() {
         <div>
           <div className={labelClass}>Od</div>
           <input type="date" value={dateFrom}
-            onChange={(e) => { setDateFrom(e.target.value); setPage(1); }}
+            onChange={(e) => setDateFrom(e.target.value)}
             className="px-3 py-2 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#137fec] focus:ring-2 focus:ring-[#137fec]/10 bg-white" />
         </div>
         <div>
           <div className={labelClass}>Do</div>
           <input type="date" value={dateTo}
-            onChange={(e) => { setDateTo(e.target.value); setPage(1); }}
+            onChange={(e) => setDateTo(e.target.value)}
             className="px-3 py-2 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#137fec] focus:ring-2 focus:ring-[#137fec]/10 bg-white" />
         </div>
         <div>
           <div className={labelClass}>Sortowanie</div>
-          <button onClick={() => { setSort(s => s === "desc" ? "asc" : "desc"); setPage(1); }}
+          <button onClick={() => setSort(s => s === "desc" ? "asc" : "desc")}
             className="flex items-center gap-1.5 px-3 py-2 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors bg-white">
             <ArrowUpDown className="w-3.5 h-3.5" />
             {sort === "desc" ? "Najnowsze" : "Najstarsze"}
@@ -308,7 +339,7 @@ export default function LeadsPage() {
           <div className={labelClass}>Wyświetl</div>
           <div className="flex items-center gap-1.5">
             {[20, 50, 100, "all"].map((l) => (
-              <button key={l} onClick={() => { setLimit(l); setPage(1); }}
+              <button key={l} onClick={() => setLimit(l)}
                 className={`px-3 py-1.5 rounded-full text-xs font-bold border transition-colors ${
                   limit === l ? "bg-[#0a192f] text-white border-[#0a192f]" : "bg-white text-gray-500 border-gray-200 hover:border-gray-300"
                 }`}>
@@ -318,7 +349,10 @@ export default function LeadsPage() {
           </div>
         </div>
         {(dateFrom || dateTo || sourceFilter || sort !== "desc" || limit !== 20 || search) && (
-          <button onClick={() => { setDateFrom(""); setDateTo(""); setSourceFilter(""); setSort("desc"); setLimit(20); setSearch(""); setPage(1); }}
+          <button onClick={() => {
+            const params = new URLSearchParams();
+            router.push(`?${params.toString()}`, { scroll: false });
+          }}
             className="px-3 py-2 text-xs font-bold text-red-500 hover:text-red-700 transition-colors">
             Resetuj filtry
           </button>
@@ -537,8 +571,6 @@ export default function LeadsPage() {
                     Tip: <code className="bg-gray-100 px-1 rounded">{"{{name}}"}</code> zostanie zastąpione imieniem i nazwiskiem odbiorcy z bazy.
                   </p>
                 </div>
-
-                {/* Attachments */}
                 <div>
                   <label className={labelClass}>Załączniki</label>
                   <div className="border-2 border-dashed border-gray-200 rounded-xl p-4 text-center cursor-pointer hover:border-[#137fec] transition-colors"
@@ -563,7 +595,6 @@ export default function LeadsPage() {
                     </div>
                   )}
                 </div>
-
                 {emailResult && (
                   <div className={`px-4 py-3 rounded-xl text-sm font-semibold ${emailResult.ok ? "bg-green-50 text-green-700 border border-green-100" : "bg-red-50 text-red-600 border border-red-100"}`}>
                     {emailResult.text}

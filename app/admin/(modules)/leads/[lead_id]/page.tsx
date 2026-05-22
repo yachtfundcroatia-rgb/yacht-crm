@@ -330,7 +330,7 @@ export default function LeadDetailPage() {
 
   return (
     <div className="max-w-4xl">
-      <button onClick={() => router.push("/admin/leads")} className="flex items-center gap-2 text-sm text-gray-500 hover:text-[#137fec] transition-colors mb-6 font-semibold">
+      <button onClick={() => router.back()} className="flex items-center gap-2 text-sm text-gray-500 hover:text-[#137fec] transition-colors mb-6 font-semibold">
         <ArrowLeft className="w-4 h-4" />Back to Leads
       </button>
 
