@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useAdmin } from "@/app/context/AdminContext";
 import { ArrowLeft, Mail, Phone, CheckCircle, Send, Paperclip } from "lucide-react";
+import LeadEvents from "@/components/LeadEvents";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL!;
 
@@ -390,6 +391,11 @@ export default function LeadDetailPage() {
               ))}
             </div>
           )}
+        </div>
+
+        {/* Events & Tasks */}
+        <div className="lg:col-span-2">
+          <LeadEvents leadId={lead.id} />
         </div>
 
         {/* Status Actions */}

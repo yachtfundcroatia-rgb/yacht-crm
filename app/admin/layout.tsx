@@ -11,9 +11,12 @@ import {
   Settings,
   LogOut,
   UserCheck,
+  Calendar,
+  Bell,
 } from "lucide-react";
 
 const LOGO_URL = "https://rhmgpxpirrclysplitzz.supabase.co/storage/v1/object/public/assets/YACHT%20FUND%20white%20main%20%20.png";
+const API = process.env.NEXT_PUBLIC_API_URL;
 
 function AdminGuard({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -25,7 +28,7 @@ function AdminGuard({ children }: { children: React.ReactNode }) {
       const token = localStorage.getItem("admin_token");
       if (!token) { router.replace("/login"); return; }
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/me`, {
+        const res = await fetch(`${API}/api/admin/me`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (!res.ok) { localStorage.removeItem("admin_token"); router.replace("/login"); return; }
@@ -61,6 +64,7 @@ function Sidebar() {
   const menu = [
     { label: "Dashboard", href: "/admin", icon: LayoutDashboard, roles: ["superadmin", "sales"] },
     { label: "Leads", href: "/admin/leads", icon: Users, roles: ["superadmin", "sales"] },
+    { label: "Calendar", href: "/admin/calendar", icon: Calendar, roles: ["superadmin", "sales"] },
     { label: "Investors", href: "/admin/investors", icon: UserCheck, roles: ["superadmin"] },
     { label: "Withdrawals", href: "/admin/withdrawals", icon: ArrowDownToLine, roles: ["superadmin"] },
     { label: "System", href: "/admin/system", icon: Settings, roles: ["superadmin"] },
@@ -110,10 +114,41 @@ function Topbar() {
   const router = useRouter();
   const { admin } = useAdmin();
   const pathname = usePathname();
+  const [upcomingCount, setUpcomingCount] = useState(0);
+
+  useEffect(() => {
+    async function fetchUpcoming() {
+      const token = localStorage.getItem("admin_token");
+      if (!token) return;
+      try {
+        const today = new Date();
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        tomorrow.setHours(23, 59, 59, 999);
+        const res = await fetch(
+          `${API}/api/admin/events?filter=upcoming&limit=100`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        if (!res.ok) return;
+        const data = await res.json();
+        // Count events scheduled for today or overdue
+        const now = new Date();
+        const count = (data.events || []).filter((e: { scheduled_at: string }) => {
+          const d = new Date(e.scheduled_at);
+          return d <= tomorrow;
+        }).length;
+        setUpcomingCount(count);
+      } catch {}
+    }
+    fetchUpcoming();
+    const interval = setInterval(fetchUpcoming, 5 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   const titles: Record<string, string> = {
     "/admin": "Dashboard",
     "/admin/leads": "Leads",
+    "/admin/calendar": "Calendar",
     "/admin/investors": "Investors & Capital",
     "/admin/withdrawals": "Withdrawals",
     "/admin/system": "System & Finance",
@@ -134,7 +169,19 @@ function Topbar() {
   return (
     <div className="h-14 bg-white border-b border-gray-100 flex items-center justify-between px-6 flex-shrink-0">
       <h1 className="font-black text-[#0a192f] text-lg">{title}</h1>
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-3">
+        <Link
+          href="/admin/calendar"
+          className="relative flex items-center justify-center w-9 h-9 rounded-lg hover:bg-gray-100 transition-colors"
+          title="Upcoming events"
+        >
+          <Bell className="w-5 h-5 text-gray-500" />
+          {upcomingCount > 0 && (
+            <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1">
+              {upcomingCount > 99 ? "99+" : upcomingCount}
+            </span>
+          )}
+        </Link>
         <span className="text-sm text-gray-500">
           <span className="font-semibold text-gray-700">{admin?.role}</span>
         </span>
